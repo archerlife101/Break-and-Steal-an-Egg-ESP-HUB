@@ -1,9 +1,9 @@
--- Egg Farming Hub V10.3 | Optimised standalone release
+-- Egg Farming Hub V10.4 | Optimised standalone release
 -- ESP + index tracker only. K hides the hub, not overlays.
 local P=game:GetService('Players'); local U=game:GetService('UserInputService'); local H=game:GetService('HttpService')
 local me=P.LocalPlayer; local pg=me:WaitForChild('PlayerGui')
-for _,key in ipairs({'EggFarmingHubV102','EggFarmingHubV103'}) do local old=_G[key]; if type(old)=='table' and type(old.Stop)=='function' then pcall(old.Stop) end end
-for _,name in ipairs({'EggFarmingHubV102','EggFarmingHubV103'}) do local g=pg:FindFirstChild(name); if g then g:Destroy() end end
+for _,key in ipairs({'EggFarmingHubV103','EggFarmingHubV104'}) do local old=_G[key]; if type(old)=='table' and type(old.Stop)=='function' then pcall(old.Stop) end end
+for _,name in ipairs({'EggFarmingHubV103','EggFarmingHubV104'}) do local g=pg:FindFirstChild(name); if g then g:Destroy() end end
 local live=true; local con={}; local objects={}; local pages={}; local cache={}; local dirty=false; local settingsDirty=false
 local rarities={'Common','Uncommon','Rare','Epic','Legendary','Mythic','Divine','Cosmic','Celestial','Secret','Void','Inferno','Omega','Spectral','Ethereal','Primordial'}
 local mutations={'Gold','Diamond','Lightning','Frozen','Angelic','Hacker','Time','Void'}
@@ -11,18 +11,18 @@ local collections={'Normal','Limited','Gold','Diamond','Lightning','Frozen','Ang
 local rc={Common='#B4B4B4',Uncommon='#4BDC5F',Rare='#3791FF',Epic='#AF4BFF',Legendary='#FFAF23',Mythic='#FF4169',Divine='#FFF578',Cosmic='#8741FF',Celestial='#5FF0FF',Secret='#FF2D41',Void='#5F239B',Inferno='#FF550F',Omega='#FF2DC3',Spectral='#73FFBE',Ethereal='#AFDCFF',Primordial='#FFD787'}
 local mc={Gold='#FFCD23',Diamond='#55EBFF',Lightning='#FFFF4B',Frozen='#64AFFF',Angelic='#FFFFE1',Hacker='#23FF55',Time='#FF64CD',Void='#9137E6'}
 local function color(hex) return Color3.fromHex(hex or '#FFFFFF') end
-local theme={bg=color('#0D111B'),side=color('#121724'),panel=color('#192030'),card=color('#212A3D'),border=color('#303D54'),blue=color('#5396FF'),white=color('#F1F5FF'),muted=color('#9BAAC1'),green=color('#4CDC91'),red=color('#F55B6E')}
-local cfg={rarity=false,mutation=false,players=false,animalSize=15,playerSize=17,trans=.65,animalBG=.18,playerBG=.15,animalRange=1500,playerRange=1500,rgb={255,80,80},username=true,distance=true,health=true,speed=true,money=true,selectedR={},selectedM={},hideKey='K',panicKey='P'}
-local folder='EggFarmingHub'; local cf=folder..'/CollectionCacheV103.json'; local sf=folder..'/SettingsV103.json'; local fileOK=type(readfile)=='function' and type(writefile)=='function' and type(isfile)=='function'
+local theme={bg=color('#090D1B'),side=color('#10162B'),panel=color('#151D36'),card=color('#202A48'),border=color('#35507B'),blue=color('#29C7FF'),purple=color('#A16BFF'),white=color('#F1F5FF'),muted=color('#9BAAC1'),green=color('#4CDC91'),red=color('#F55B6E')}
+local cfg={rarity=false,mutation=false,players=false,animalSize=15,playerSize=17,trans=.65,animalBG=.18,playerBG=.15,animalRange=1500,playerRange=1500,rgb={255,80,80},username=true,distance=true,health=true,speed=true,money=true,selectedR={},selectedM={},hideKey='K',panicKey='P',uiScale=100,uiOpacity=10,accentR=41,accentG=199,accentB=255}
+local folder='EggFarmingHub'; local cf=folder..'/CollectionCacheV104.json'; local sf=folder..'/SettingsV104.json'; local fileOK=type(readfile)=='function' and type(writefile)=='function' and type(isfile)=='function'
 local function listen(sig,fn) local c=sig:Connect(fn); con[#con+1]=c; return c end
 local function folderReady() if type(makefolder)=='function' then pcall(makefolder,folder) end end
 local function read(path) if not fileOK then return end; local ok,res=pcall(function() if isfile(path) then return H:JSONDecode(readfile(path)) end end); if ok and type(res)=='table' and res.PlaceId==game.PlaceId and res.UserId==me.UserId then return res end end
 local function write(path,data) if not fileOK then return false end; folderReady(); data.PlaceId=game.PlaceId; data.UserId=me.UserId; local ok=pcall(function() writefile(path,H:JSONEncode(data)) end); return ok end
 local imported='None'; local verified=false
-local function load() local s=read(sf) or read(folder..'/SettingsV102.json') or read(folder..'/SettingsV101.json'); if s then local source=s.Settings or s; for k,v in pairs(source) do if cfg[k]~=nil and type(v)==type(cfg[k]) then cfg[k]=v end end; if s.RarityESP~=nil then cfg.rarity=s.RarityESP end; if s.MutationESP~=nil then cfg.mutation=s.MutationESP end; if s.PlayerESP~=nil then cfg.players=s.PlayerESP end; cfg.selectedR=s.RaritySelected or cfg.selectedR; cfg.selectedM=s.MutationSelected or cfg.selectedM; cfg.rgb=s.PlayerRGB and {s.PlayerRGB.R or 255,s.PlayerRGB.G or 80,s.PlayerRGB.B or 80} or cfg.rgb end
-for _,f in ipairs({cf,folder..'/CollectionCacheV102.json',folder..'/CollectionCacheV101.json',folder..'/CollectionCacheV100.json',folder..'/CollectionCacheV99.json',folder..'/CollectionCacheV98.json',folder..'/CollectionCacheV97.json',folder..'/CollectionCacheV96.json',folder..'/CollectionCacheV95.json'}) do local d=read(f); if d and type(d.Caches)=='table' then cache=d.Caches; imported=f; dirty=f~=cf; break end end end
+local function load() local s=read(sf) or read(folder..'/SettingsV103.json') or read(folder..'/SettingsV102.json') or read(folder..'/SettingsV101.json'); if s then local source=s.Settings or s; for k,v in pairs(source) do if cfg[k]~=nil and type(v)==type(cfg[k]) then cfg[k]=v end end; if s.RarityESP~=nil then cfg.rarity=s.RarityESP end; if s.MutationESP~=nil then cfg.mutation=s.MutationESP end; if s.PlayerESP~=nil then cfg.players=s.PlayerESP end; cfg.selectedR=s.RaritySelected or cfg.selectedR; cfg.selectedM=s.MutationSelected or cfg.selectedM; cfg.rgb=s.PlayerRGB and {s.PlayerRGB.R or 255,s.PlayerRGB.G or 80,s.PlayerRGB.B or 80} or cfg.rgb end
+for _,f in ipairs({cf,folder..'/CollectionCacheV103.json',folder..'/CollectionCacheV102.json',folder..'/CollectionCacheV101.json',folder..'/CollectionCacheV100.json',folder..'/CollectionCacheV99.json',folder..'/CollectionCacheV98.json',folder..'/CollectionCacheV97.json',folder..'/CollectionCacheV96.json',folder..'/CollectionCacheV95.json'}) do local d=read(f); if d and type(d.Caches)=='table' then cache=d.Caches; imported=f; dirty=f~=cf; break end end end
 load()
-local function save() local ok=write(cf,{Version='10.2',Caches=cache}); if ok then local d=read(cf); verified=d and type(d.Caches)=='table' or false; if verified then dirty=false end end; write(sf,{Version='10.2',Settings=cfg}); settingsDirty=false; return verified end
+local function save() local ok=write(cf,{Version='10.4',Caches=cache}); if ok then local d=read(cf); verified=d and type(d.Caches)=='table' or false; if verified then dirty=false end end; write(sf,{Version='10.4',Settings=cfg}); settingsDirty=false; return verified end
 local suffix={{1e36,'Ud'},{1e33,'Dc'},{1e30,'No'},{1e27,'Oc'},{1e24,'Sp'},{1e21,'Sx'},{1e18,'Qi'},{1e15,'Qa'},{1e12,'T'},{1e9,'B'},{1e6,'M'},{1e3,'K'}}
 local function money(n) if type(n)~='number' then return 'N/A' end; if n~=n then return 'N/A' end; local sign=n<0 and '-$' or '$'; n=math.abs(n); for _,e in ipairs(suffix) do if n>=e[1] then local x=string.format('%.2f',math.floor(n/e[1]*100)/100):gsub('0+$',''):gsub('%.$',''); return sign..x..e[2] end end; return sign..math.floor(n) end
 local function playerMoney(p) for _,host in ipairs({p:FindFirstChild('leaderstats'),p}) do if host then for _,name in ipairs({'Money','Cash','Coins','Currency','Gold','Balance','Dollars'}) do local v=host:FindFirstChild(name); if v and (v:IsA('IntValue') or v:IsA('NumberValue')) then return v.Value end; local a=host:GetAttribute(name); if type(a)=='number' then return a end end end end end
@@ -53,7 +53,12 @@ local function detect() local i=index(); if not i then return nil,'INDEX_MISSING
 local function scan() local entries={}; local seen={}; local i=index(); if not i then return entries end; for _,list in ipairs(i:GetDescendants()) do if list.Name=='AnimalList' then local zone=list.Parent and list.Parent.Name or 'Unknown'; for _,frame in ipairs(list:GetChildren()) do if frame:IsA('Frame') and frame.Name~='Template' then local inner=frame:FindFirstChild('Inner'); local label=inner and inner:FindFirstChild('Name'); if label and label:IsA('TextLabel') then local key=zone..'|'..frame.Name; if not seen[key] then seen[key]=true; local gradient=inner:FindFirstChild('UIGradient'); local rarity=gradient and gradient:GetAttribute('Rarity') or frame:GetAttribute('Rarity') or 'Unknown'; entries[#entries+1]={Zone=zone,InternalName=frame.Name,Name=label.Text=='???' and frame.Name or label.Text,Rarity=tostring(rarity),Status=label.Text=='???' and 'MISSING' or 'COLLECTED'} end end end end end end; table.sort(entries,function(a,b) if a.Zone~=b.Zone then local x=tonumber(a.Zone:match('[Zz]one(%d+)')); local y=tonumber(b.Zone:match('[Zz]one(%d+)')); if x and y then return x<y end; return x~=nil end; return a.InternalName<b.InternalName end); return entries end
 local function stats(entries) local s={RegularTotal=0,RegularCollected=0,EventTotal=0,EventCollected=0}; for _,e in ipairs(entries) do local event=not e.Zone:match('[Zz]one%d+'); local prefix=event and 'Event' or 'Regular'; s[prefix..'Total']+=1; if e.Status=='COLLECTED' then s[prefix..'Collected']+=1 end end; return s end
 local function capture(name,source) if not name then return false end; local entries=scan(); local s=stats(entries); local a,b=progressNumbers(); if s.RegularTotal~=120 or s.EventTotal~=15 then return false end; if name=='Limited' then if b~=15 or a~=s.EventCollected then return false end else if b~=120 or a~=s.RegularCollected then return false end end; local sig=H:JSONEncode(entries)..'|'..progressText(); if cache[name] and cache[name].Signature==sig then return false end; cache[name]={Entries=entries,Stats=s,Progress=progressText(),Signature=sig,Source=source or 'Manual',UpdatedAt=os.time()}; dirty=true; return true end
-local gui=new('ScreenGui',pg,{Name='EggFarmingHubV103',ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling}); local main=round(new('Frame',gui,{Size=UDim2.fromOffset(780,580),Position=UDim2.new(.5,-390,.5,-290),BackgroundColor3=theme.bg,BorderSizePixel=0,Active=true}),12); border(main); local head=new('Frame',main,{Size=UDim2.new(1,0,0,58),BackgroundColor3=theme.side,BorderSizePixel=0,Active=true}); text(head,'EGG FARMING HUB',18,{Size=UDim2.new(1,-120,0,28),Position=UDim2.fromOffset(18,5),Font=Enum.Font.GothamBold}); text(head,'V10.3 • OPTIMISED • K TO HIDE',10,{Size=UDim2.new(1,-120,0,20),Position=UDim2.fromOffset(18,31),TextColor3=theme.muted});
+local gui=new('ScreenGui',pg,{Name='EggFarmingHubV104',ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling}); local main=round(new('Frame',gui,{Size=UDim2.fromOffset(780,580),Position=UDim2.new(.5,-390,.5,-290),BackgroundColor3=theme.bg,BorderSizePixel=0,Active=true}),12); border(main); local head=new('Frame',main,{Size=UDim2.new(1,0,0,58),BackgroundColor3=theme.side,BorderSizePixel=0,Active=true}); text(head,'EGG FARMING HUB',18,{Size=UDim2.new(1,-120,0,28),Position=UDim2.fromOffset(18,5),Font=Enum.Font.GothamBold}); text(head,'V10.4  /  NEON EDITION  /  K TO HIDE',10,{Size=UDim2.new(1,-120,0,20),Position=UDim2.fromOffset(18,31),TextColor3=theme.muted});
+new('UIGradient',main,{Rotation=125,Color=ColorSequence.new({ColorSequenceKeypoint.new(0,color('#111C39')),ColorSequenceKeypoint.new(.55,color('#090D1B')),ColorSequenceKeypoint.new(1,color('#1B1237'))})})
+new('UIStroke',main,{Color=theme.blue,Thickness=1.5,Transparency=.25})
+new('Frame',head,{Size=UDim2.new(1,0,0,3),Position=UDim2.new(0,0,1,-3),BorderSizePixel=0,BackgroundColor3=theme.blue})
+local uiScaler=new('UIScale',main,{Scale=math.clamp((cfg.uiScale or 100)/100,.7,1.2)}); main.BackgroundTransparency=(cfg.uiOpacity or 10)/100
+theme.blue=Color3.fromRGB(cfg.accentR or 41,cfg.accentG or 199,cfg.accentB or 255)
 local function btn(parent,title,fn,props) props=props or {}; props.Size=props.Size or UDim2.new(1,0,0,36); props.BackgroundColor3=props.BackgroundColor3 or theme.card; props.Text=title; props.TextColor3=props.TextColor3 or theme.white; props.Font=Enum.Font.GothamBold; props.TextSize=props.TextSize or 12; props.BorderSizePixel=0; local b=round(new('TextButton',parent,props),7); if fn then b.MouseButton1Click:Connect(function() if live then fn(b) end end) end; return b end
 local sidebar=new('Frame',main,{Size=UDim2.new(0,170,1,-104),Position=UDim2.fromOffset(0,58),BackgroundColor3=theme.side,BorderSizePixel=0}); new('UIPadding',sidebar,{PaddingTop=UDim.new(0,14),PaddingLeft=UDim.new(0,10),PaddingRight=UDim.new(0,10)}); new('UIListLayout',sidebar,{Padding=UDim.new(0,7),SortOrder=Enum.SortOrder.LayoutOrder}); local body=new('Frame',main,{Size=UDim2.new(1,-170,1,-104),Position=UDim2.fromOffset(170,58),BackgroundTransparency=1}); local foot=new('Frame',main,{Size=UDim2.new(1,0,0,46),Position=UDim2.new(0,0,1,-46),BackgroundColor3=theme.side,BorderSizePixel=0}); local floating=round(btn(gui,'EGG',nil,{Size=UDim2.fromOffset(58,58),Position=UDim2.new(0,24,.5,-29),BackgroundColor3=theme.blue,Visible=false,Active=true,TextSize=14}),29); border(floating,theme.white)
 local pageNames={'Dashboard','Animal ESP','Player ESP','Animals','Mutations','Settings'}; local tab='Dashboard'; local mode='EXPANDED'; local nav={}; local showTab
@@ -61,19 +66,133 @@ local function page(name) local p=new('ScrollingFrame',body,{Name=name,Size=UDim
 for _,name in ipairs(pageNames) do pages[name]=page(name) end
 local function clear(p) for _,x in ipairs(p:GetChildren()) do if x:IsA('GuiObject') then x:Destroy() end end end
 local function line(p,s,size,height,c) return text(p,s,size or 12,{Size=UDim2.new(1,0,0,height or 28),TextColor3=c or theme.white,TextWrapped=true}) end
-local function section(p,s) line(p,s,14,30) end
-local function action(p,s,fn,c) return btn(p,s,fn,{BackgroundColor3=c or theme.card}) end
+local function section(p,s)
+    local row=new('Frame',p,{Size=UDim2.new(1,0,0,34),BackgroundTransparency=1})
+    new('Frame',row,{Size=UDim2.fromOffset(3,19),Position=UDim2.fromOffset(0,8),BackgroundColor3=theme.blue,BorderSizePixel=0})
+    text(row,string.upper(s),13,{Size=UDim2.new(1,-16,1,0),Position=UDim2.fromOffset(13,0),Font=Enum.Font.GothamBold,TextColor3=theme.white})
+end
+local function action(p,s,fn,c)
+    local b=btn(p,s,fn,{BackgroundColor3=c or theme.card,TextSize=12})
+    border(b,theme.border)
+    b.MouseEnter:Connect(function() if b.Parent then b.BackgroundColor3=theme.blue end end)
+    b.MouseLeave:Connect(function() if b.Parent then b.BackgroundColor3=c or theme.card end end)
+    return b
+end
 local function toggle(p,s,key) local row=round(new('Frame',p,{Size=UDim2.new(1,0,0,47),BackgroundColor3=theme.panel,BorderSizePixel=0}),8); text(row,s,12,{Size=UDim2.new(1,-100,1,0),Position=UDim2.fromOffset(14,0)}); local b=btn(row,'',nil,{Size=UDim2.fromOffset(68,28),Position=UDim2.new(1,-80,.5,-14)}); local function refresh() b.Text=cfg[key] and 'ON' or 'OFF'; b.BackgroundColor3=cfg[key] and theme.blue or theme.card end; refresh(); b.MouseButton1Click:Connect(function() cfg[key]=not cfg[key]; settingsDirty=true; refresh() end) end
 local function slider(p,s,min,max,get,set) local row=round(new('Frame',p,{Size=UDim2.new(1,0,0,75),BackgroundColor3=theme.panel,BorderSizePixel=0}),8); local caption=text(row,'',12,{Size=UDim2.new(1,-28,0,26),Position=UDim2.fromOffset(14,6)}); local track=round(new('Frame',row,{Size=UDim2.new(1,-42,0,8),Position=UDim2.fromOffset(21,51),BackgroundColor3=theme.card,BorderSizePixel=0}),4); local fill=round(new('Frame',track,{BackgroundColor3=theme.blue,BorderSizePixel=0}),4); local knob=round(new('Frame',track,{Size=UDim2.fromOffset(16,16),AnchorPoint=Vector2.new(.5,.5),BackgroundColor3=theme.white,BorderSizePixel=0}),8); local function display() local v=get(); local t=(v-min)/(max-min); caption.Text=s..': '..v; fill.Size=UDim2.fromScale(t,1); knob.Position=UDim2.fromScale(t,.5) end; display(); local moving=false; local function at(x) if track.AbsoluteSize.X==0 then return end; set(math.floor(math.clamp((x-track.AbsolutePosition.X)/track.AbsoluteSize.X,0,1)*(max-min)+min+.5)); settingsDirty=true; display() end; local c1=track.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then moving=true; at(i.Position.X) end end); local c2=U.InputChanged:Connect(function(i) if moving and i.UserInputType==Enum.UserInputType.MouseMovement then at(i.Position.X) end end); local c3=U.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then moving=false end end); row.Destroying:Once(function() c1:Disconnect(); c2:Disconnect(); c3:Disconnect() end) end
 local function filters(p,names,selected,colors) local box=new('Frame',p,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1}); new('UIGridLayout',box,{CellSize=UDim2.new(.5,-5,0,37),CellPadding=UDim2.fromOffset(10,7)}); for _,name in ipairs(names) do local b=btn(box,'',nil,{TextColor3=color(colors[name])}); local function refresh() b.Text=(selected[name] and '✓ ' or '○ ')..name; b.BackgroundColor3=selected[name] and theme.blue or theme.card end; refresh(); b.MouseButton1Click:Connect(function() selected[name]=not selected[name]; settingsDirty=true; refresh() end) end end
-local function bar(p,name,a,b,c) local row=round(new('Frame',p,{Size=UDim2.new(1,0,0,66),BackgroundColor3=theme.panel,BorderSizePixel=0}),8); text(row,name,13,{Size=UDim2.new(.7,-14,0,25),Position=UDim2.fromOffset(14,7),Font=Enum.Font.GothamBold}); text(row,a..'/'..b,12,{Size=UDim2.new(.3,-14,0,25),Position=UDim2.new(.7,0,0,7),TextXAlignment=Enum.TextXAlignment.Right,TextColor3=theme.muted}); local track=round(new('Frame',row,{Size=UDim2.new(1,-28,0,9),Position=UDim2.fromOffset(14,43),BackgroundColor3=theme.card,BorderSizePixel=0}),5); round(new('Frame',track,{Size=UDim2.fromScale(b>0 and math.clamp(a/b,0,1) or 0,1),BackgroundColor3=c or theme.blue,BorderSizePixel=0}),5) end
+local function bar(p,name,a,b,c)
+    local row=round(new('Frame',p,{Size=UDim2.new(1,0,0,86),BackgroundColor3=theme.panel,BorderSizePixel=0}),12)
+    border(row,c or theme.border)
+    new('Frame',row,{Size=UDim2.fromOffset(4,57),Position=UDim2.fromOffset(10,14),BackgroundColor3=c or theme.blue,BorderSizePixel=0})
+    text(row,string.upper(name),14,{Size=UDim2.new(.62,-20,0,24),Position=UDim2.fromOffset(24,11),Font=Enum.Font.GothamBold})
+    text(row,string.format('%.1f%%',b>0 and a/b*100 or 0),13,{Size=UDim2.new(.32,0,0,23),Position=UDim2.new(.66,0,0,11),TextXAlignment=Enum.TextXAlignment.Right,TextColor3=c or theme.blue,Font=Enum.Font.GothamBold})
+    text(row,a..' / '..b..'  UNLOCKED',10,{Size=UDim2.new(1,-42,0,17),Position=UDim2.fromOffset(24,35),TextColor3=theme.muted})
+    local track=round(new('Frame',row,{Size=UDim2.new(1,-48,0,7),Position=UDim2.fromOffset(24,65),BackgroundColor3=theme.card,BorderSizePixel=0}),4)
+    round(new('Frame',track,{Size=UDim2.fromScale(b>0 and math.clamp(a/b,0,1) or 0,1),BackgroundColor3=c or theme.blue,BorderSizePixel=0}),4)
+    return row
+end
+
 local selectedZone='ALL'; local selectedRarity='ALL'; local missing=false; local search=''; local currentCollection=nil; local selectedCollection='Gold'
-local render={}; local function collectionView(name) currentCollection=name; local p=pages[tab]; clear(p); section(p,name..' Index'); action(p,'← BACK',function() currentCollection=nil; render[tab]() end); local d=cache[name]; if not d then line(p,'No cached data.'); return end; local s=stats(d.Entries); local a,b=name=='Limited' and s.EventCollected or s.RegularCollected,name=='Limited' and s.EventTotal or s.RegularTotal; bar(p,name,a,b,color(mc[name])); line(p,d.Progress or '',12,24,theme.muted); local function choices(field,values) action(p,field..': '..(field=='ZONE' and selectedZone or selectedRarity),function() local current=field=='ZONE' and selectedZone or selectedRarity; local i=(table.find(values,current) or 1)%#values+1; if field=='ZONE' then selectedZone=values[i] else selectedRarity=values[i] end; collectionView(name) end) end; local zs={'ALL'}; local rs={'ALL'}; for _,e in ipairs(d.Entries) do if not table.find(zs,e.Zone) then zs[#zs+1]=e.Zone end; if not table.find(rs,e.Rarity) then rs[#rs+1]=e.Rarity end end; choices('ZONE',zs); choices('RARITY',rs); action(p,'Missing only: '..(missing and 'ON' or 'OFF'),function() missing=not missing; collectionView(name) end); local input=round(new('TextBox',p,{Size=UDim2.new(1,0,0,36),BackgroundColor3=theme.card,TextColor3=theme.white,PlaceholderText='Search animals...',Text=search,ClearTextOnFocus=false,Font=Enum.Font.Gotham,TextSize=12,BorderSizePixel=0}),6); local results=new('Frame',p,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1}); new('UIListLayout',results,{Padding=UDim.new(0,5)}); local function redraw() clear(results); local count=0; local last; for _,e in ipairs(d.Entries) do if (name~='Limited' or not e.Zone:match('[Zz]one%d+')) and (selectedZone=='ALL' or selectedZone==e.Zone) and (selectedRarity=='ALL' or selectedRarity==e.Rarity) and (not missing or e.Status=='MISSING') and (search=='' or e.Name:lower():find(search:lower(),1,true) or e.InternalName:lower():find(search:lower(),1,true)) then if last~=e.Zone then last=e.Zone; line(results,'── '..last..' ──',12,27,theme.muted) end; local row=round(new('Frame',results,{Size=UDim2.new(1,0,0,38),BackgroundColor3=theme.panel,BorderSizePixel=0}),6); text(row,(e.Status=='COLLECTED' and '✓ ' or '× ')..e.Name..' ['..e.Rarity..']',12,{Size=UDim2.new(1,-24,1,0),Position=UDim2.fromOffset(12,0),TextColor3=color(rc[e.Rarity])}); count+=1 end end; if count==0 then line(results,'No matching animals.',12,30,theme.muted) end end; input:GetPropertyChangedSignal('Text'):Connect(function() search=input.Text; redraw() end); redraw() end
+local render={}
+local function dropdown(p,title,options,chosen,onPick)
+    local wrap=round(new('Frame',p,{Size=UDim2.new(1,0,0,45),BackgroundColor3=theme.panel,BorderSizePixel=0,ClipsDescendants=true}),9)
+    border(wrap,theme.border)
+    local trigger=btn(wrap,title..'   /   '..tostring(chosen)..'     ▼',nil,{Size=UDim2.new(1,-12,0,40),Position=UDim2.fromOffset(6,2),BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Left,TextSize=12})
+    local menu=new('ScrollingFrame',wrap,{Position=UDim2.fromOffset(7,45),Size=UDim2.new(1,-14,0,0),BackgroundColor3=theme.side,BorderSizePixel=0,ScrollBarThickness=4,ScrollBarImageColor3=theme.blue,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y})
+    new('UIListLayout',menu,{Padding=UDim.new(0,4),SortOrder=Enum.SortOrder.LayoutOrder})
+    local expanded=false
+    local function setOpen(v)
+        expanded=v
+        local height=math.min(#options*39+8,225)
+        wrap.Size=UDim2.new(1,0,0,v and height+48 or 45)
+        menu.Size=UDim2.new(1,-14,0,v and height or 0)
+        trigger.Text=title..'   /   '..tostring(chosen)..(v and '     ▲' or '     ▼')
+    end
+    trigger.MouseButton1Click:Connect(function() setOpen(not expanded) end)
+    for i,value in ipairs(options) do
+        btn(menu,(value==chosen and '◆  ' or '    ')..value,function()
+            chosen=value; setOpen(false); onPick(value)
+        end,{Size=UDim2.new(1,-7,0,35),LayoutOrder=i,BackgroundColor3=value==chosen and theme.blue or theme.card,TextXAlignment=Enum.TextXAlignment.Left})
+    end
+end
+local function collectionView(name)
+    currentCollection=name
+    local p=pages[tab]; clear(p)
+    section(p,'COLLECTION / '..name)
+    action(p,'←  RETURN TO COLLECTIONS',function() currentCollection=nil; render[tab]() end)
+    local d=cache[name]
+    if not d then line(p,'No saved collection data available.',12,35,theme.muted); return end
+    local st=stats(d.Entries)
+    local a,b=name=='Limited' and st.EventCollected or st.RegularCollected,name=='Limited' and st.EventTotal or st.RegularTotal
+    bar(p,name,a,b,color(mc[name] or rc.Primordial))
+    local zs={'ALL'}; local rs={'ALL'}
+    for _,e in ipairs(d.Entries) do
+        if not table.find(zs,e.Zone) then zs[#zs+1]=e.Zone end
+        if not table.find(rs,e.Rarity) then rs[#rs+1]=e.Rarity end
+    end
+    table.sort(zs,function(a,b) if a=='ALL' then return true elseif b=='ALL' then return false end; local x=tonumber(a:match('[Zz]one%s*(%d+)')); local y=tonumber(b:match('[Zz]one%s*(%d+)')); if x and y then return x<y elseif x then return true elseif y then return false end; return a<b end)
+    table.sort(rs,function(a,b) return a=='ALL' or (b~='ALL' and a<b) end)
+    section(p,'SMART FILTERS')
+    dropdown(p,'ZONE',zs,selectedZone,function(v) selectedZone=v; collectionView(name) end)
+    dropdown(p,'RARITY',rs,selectedRarity,function(v) selectedRarity=v; collectionView(name) end)
+    action(p,missing and '●  SHOWING MISSING ONLY' or '○  SHOWING ALL ANIMALS',function() missing=not missing; collectionView(name) end,missing and theme.blue or theme.card)
+    local input=round(new('TextBox',p,{Size=UDim2.new(1,0,0,43),BackgroundColor3=theme.panel,TextColor3=theme.white,PlaceholderText='⌕   Search by animal name...',PlaceholderColor3=theme.muted,Text=search,ClearTextOnFocus=false,Font=Enum.Font.Gotham,TextSize=12,BorderSizePixel=0}),9)
+    border(input,theme.border)
+    local summary=line(p,'',12,26,theme.blue)
+    local results=new('Frame',p,{Size=UDim2.new(1,0,0,0),AutomaticSize=Enum.AutomaticSize.Y,BackgroundTransparency=1})
+    new('UIListLayout',results,{Padding=UDim.new(0,7)})
+    local function redraw()
+        clear(results); local count=0; local last
+        for _,e in ipairs(d.Entries) do
+            if (name~='Limited' or not e.Zone:match('[Zz]one%d+')) and (selectedZone=='ALL' or selectedZone==e.Zone) and (selectedRarity=='ALL' or selectedRarity==e.Rarity) and (not missing or e.Status=='MISSING') and (search=='' or e.Name:lower():find(search:lower(),1,true) or e.InternalName:lower():find(search:lower(),1,true)) then
+                if last~=e.Zone then last=e.Zone; section(results,e.Zone) end
+                local tint=color(rc[e.Rarity]); local row=round(new('Frame',results,{Size=UDim2.new(1,0,0,65),BackgroundColor3=theme.panel,BorderSizePixel=0}),10)
+                border(row,theme.border)
+                new('Frame',row,{Size=UDim2.fromOffset(4,42),Position=UDim2.fromOffset(9,12),BackgroundColor3=tint,BorderSizePixel=0})
+                text(row,e.Name,13,{Size=UDim2.new(1,-140,0,27),Position=UDim2.fromOffset(22,8),Font=Enum.Font.GothamBold})
+                text(row,string.upper(e.Rarity)..'   •   '..string.upper(e.Zone),10,{Size=UDim2.new(1,-145,0,20),Position=UDim2.fromOffset(22,34),TextColor3=tint,Font=Enum.Font.GothamBold})
+                local done=e.Status=='COLLECTED'
+                text(row,done and '✓  OWNED' or '×  MISSING',11,{Size=UDim2.fromOffset(106,26),Position=UDim2.new(1,-116,.5,-13),TextColor3=done and theme.green or theme.red,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Right})
+                count+=1
+            end
+        end
+        summary.Text='RESULTS   '..count..' MATCHES    •    '..a..' / '..b..' COLLECTED'
+        if count==0 then line(results,'No animals match these filters.',12,35,theme.muted) end
+    end
+    input:GetPropertyChangedSignal('Text'):Connect(function() search=input.Text; redraw() end)
+    redraw()
+end
+
 render.Dashboard=function() local p=pages.Dashboard; clear(p); section(p,'Dashboard'); line(p,'ESP + index tracker • Custom shortcuts in Settings.',12,45,theme.muted); local detected=detect(); line(p,'Index: '..tostring(detected or 'Unknown')..'   |   Progress: '..progressText(),12,36); line(p,'ESP: Animals '..((cfg.rarity or cfg.mutation) and 'ON' or 'OFF')..'   Players '..(cfg.players and 'ON' or 'OFF'),12,30); section(p,'Collection progress'); for _,name in ipairs(collections) do local d=cache[name]; if d then local s=stats(d.Entries); bar(p,name,name=='Limited' and s.EventCollected or s.RegularCollected,name=='Limited' and s.EventTotal or s.RegularTotal,color(mc[name])) else line(p,name..': Not cached',12,22,theme.muted) end end; section(p,'Storage'); line(p,'Imported: '..imported..'\nSave verification: '..tostring(verified),11,54,theme.muted) end
 render['Animal ESP']=function() local p=pages['Animal ESP']; clear(p); section(p,'Animal ESP'); toggle(p,'Rarity ESP','rarity'); toggle(p,'Mutation ESP','mutation'); slider(p,'Text size',10,30,function() return cfg.animalSize end,function(v) cfg.animalSize=v end); slider(p,'Card transparency %',0,100,function() return math.floor(cfg.animalBG*100) end,function(v) cfg.animalBG=v/100 end); slider(p,'Maximum distance',100,5000,function() return cfg.animalRange end,function(v) cfg.animalRange=v end); section(p,'Rarity filters'); filters(p,rarities,cfg.selectedR,rc); action(p,'SELECT ALL RARITIES',function() for _,r in ipairs(rarities) do cfg.selectedR[r]=true end; settingsDirty=true; render['Animal ESP']() end,theme.blue); action(p,'CLEAR RARITIES',function() cfg.selectedR={} ; settingsDirty=true; render['Animal ESP']() end); section(p,'Mutation filters'); filters(p,mutations,cfg.selectedM,mc); action(p,'SELECT ALL MUTATIONS',function() for _,m in ipairs(mutations) do cfg.selectedM[m]=true end; settingsDirty=true; render['Animal ESP']() end,theme.blue); action(p,'CLEAR MUTATIONS',function() cfg.selectedM={}; settingsDirty=true; render['Animal ESP']() end) end
 render['Player ESP']=function() local p=pages['Player ESP']; clear(p); section(p,'Player ESP'); toggle(p,'Enable Player ESP','players'); slider(p,'Text size',10,30,function() return cfg.playerSize end,function(v) cfg.playerSize=v end); slider(p,'Highlight transparency %',0,100,function() return math.floor(cfg.trans*100) end,function(v) cfg.trans=v/100 end); slider(p,'Card transparency %',0,100,function() return math.floor(cfg.playerBG*100) end,function(v) cfg.playerBG=v/100 end); slider(p,'Maximum distance',100,5000,function() return cfg.playerRange end,function(v) cfg.playerRange=v end); section(p,'Player RGB'); for i,channel in ipairs({'Red','Green','Blue'}) do slider(p,channel,0,255,function() return cfg.rgb[i] end,function(v) cfg.rgb[i]=v end) end; section(p,'Information'); for _,pair in ipairs({{'Username','username'},{'Distance','distance'},{'Health','health'},{'Speed','speed'},{'Money','money'}}) do toggle(p,'Show '..pair[1],pair[2]) end end
-render.Animals=function() local p=pages.Animals; clear(p); section(p,'Animal Collections'); for _,name in ipairs({'Normal','Limited'}) do local d=cache[name]; if d then local s=stats(d.Entries); bar(p,name,name=='Limited' and s.EventCollected or s.RegularCollected,name=='Limited' and s.EventTotal or s.RegularTotal); action(p,'VIEW '..name:upper(),function() collectionView(name) end,theme.blue) else line(p,name..': Not cached') end; action(p,'CAPTURE CURRENT AS '..name:upper(),function() capture(name,'Manual'); render.Animals() end) end end
-render.Mutations=function() local p=pages.Mutations; clear(p); section(p,'Mutation Collections'); line(p,'Current index: '..tostring(detect()),12,30,theme.muted); for _,name in ipairs(mutations) do action(p,(selectedCollection==name and '● ' or '○ ')..name..(cache[name] and ' [CACHED]' or ''),function() selectedCollection=name; render.Mutations() end,selectedCollection==name and theme.blue or theme.card) end; local d=cache[selectedCollection]; if d then local s=stats(d.Entries); bar(p,selectedCollection,s.RegularCollected,s.RegularTotal,color(mc[selectedCollection])); action(p,'VIEW '..selectedCollection:upper(),function() collectionView(selectedCollection) end,theme.blue) end; action(p,'CAPTURE CURRENT AS '..selectedCollection:upper(),function() capture(selectedCollection,'Manual'); render.Mutations() end) end
+render.Animals=function()
+    local p=pages.Animals; clear(p)
+    section(p,'COLLECTION DASHBOARD')
+    line(p,'Select a collection to inspect animals, progress and missing entries.',12,40,theme.muted)
+    for _,name in ipairs(collections) do
+        local d=cache[name]; local st=d and stats(d.Entries)
+        local a=st and (name=='Limited' and st.EventCollected or st.RegularCollected) or 0
+        local b=st and (name=='Limited' and st.EventTotal or st.RegularTotal) or (name=='Limited' and 15 or 120)
+        local c=color(mc[name] or (name=='Normal' and '#29C7FF' or '#A16BFF'))
+        local card=bar(p,name,a,b,c)
+        local hit=btn(card,'',function() collectionView(name) end,{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,TextTransparency=1})
+    end
+    section(p,'INDEX ACTIONS')
+    action(p,'CAPTURE CURRENT INDEX',function() local name=detect(); if name then capture(name,'Manual') end; render.Animals() end,theme.blue)
+end
+render.Mutations=function()
+    local p=pages.Mutations; clear(p)
+    section(p,'MUTATION COLLECTIONS')
+    line(p,'Choose a mutation card to open its saved index.',12,36,theme.muted)
+    for _,name in ipairs(mutations) do
+        local d=cache[name]; local st=d and stats(d.Entries)
+        local card=bar(p,name,st and st.RegularCollected or 0,st and st.RegularTotal or 120,color(mc[name]))
+        btn(card,'',function() collectionView(name) end,{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,TextTransparency=1})
+    end
+end
+
 local mainTab='ESP'; local espSub='Animal ESP'; local indexSub='Animals'; local panic=false; local panicBackup=nil; local awaitingKey=nil
 local function subnav(p,names,active)
     local row=new('Frame',p,{Size=UDim2.new(1,0,0,40),BackgroundTransparency=1})
@@ -124,6 +243,13 @@ render.Settings=function()
     section(p,'Emergency controls')
     action(p,panic and 'RESTORE ALL FEATURES' or 'PANIC NOW',panicToggle,theme.red)
     action(p,'RESET SHORTCUTS',function() cfg.hideKey='K'; cfg.panicKey='P'; settingsDirty=true; render.Settings() end)
+    section(p,'APPEARANCE')
+    slider(p,'Interface scale %',70,120,function() return cfg.uiScale or 100 end,function(v) cfg.uiScale=v; if uiScaler then uiScaler.Scale=v/100 end end)
+    slider(p,'Panel transparency %',0,60,function() return cfg.uiOpacity or 10 end,function(v) cfg.uiOpacity=v; main.BackgroundTransparency=v/100 end)
+    section(p,'NEON ACCENT RGB')
+    for _,spec in ipairs({{'Red','accentR'}, {'Green','accentG'}, {'Blue','accentB'}}) do
+        slider(p,spec[1],0,255,function() return cfg[spec[2]] end,function(v) cfg[spec[2]]=v; theme.blue=Color3.fromRGB(cfg.accentR,cfg.accentG,cfg.accentB) end)
+    end
     section(p,'Storage')
     line(p,'Your existing index cache and ESP preferences are retained. Saving does not overwrite the previous version files.',12,68,theme.muted)
 end
@@ -165,10 +291,10 @@ end)
 local sizes={{650,480},{780,580},{920,660}}; local sizeIdx=2; btn(foot,'RESIZE',function() sizeIdx=sizeIdx%#sizes+1; local s=sizes[sizeIdx]; main.Size=UDim2.fromOffset(s[1],s[2]) end,{Size=UDim2.fromOffset(95,30),Position=UDim2.new(1,-238,0,8)}); local saveBtn=btn(foot,'SAVE + VERIFY',function(b) local ok=save(); b.Text=ok and 'VERIFIED!' or 'FAILED'; task.delay(2,function() if b.Parent then b.Text='SAVE + VERIFY' end end) end,{Size=UDim2.fromOffset(125,30),Position=UDim2.new(1,-135,0,8),BackgroundColor3=color('#256C50')}); text(foot,'● TRACKER ACTIVE',11,{Size=UDim2.new(.4,0,1,0),Position=UDim2.fromOffset(16,0),TextColor3=theme.green,Font=Enum.Font.GothamBold})
 local function stop() if not live then return end; live=false; if panic and panicBackup then cfg.rarity=panicBackup.rarity; cfg.mutation=panicBackup.mutation; cfg.players=panicBackup.players end; save(); for _,c in ipairs(con) do c:Disconnect() end; for m in pairs(objects) do erase(m) end; gui:Destroy() end
 close.MouseButton1Click:Connect(stop)
-showTab('Animal ESP')
+showTab('Animals')
 task.spawn(function() while live do local ok,err=pcall(animalESP); if not ok then warn('[EggHub Animal ESP]',err) end; task.wait(.3) end end)
 task.spawn(function() while live do local ok,err=pcall(playerESP); if not ok then warn('[EggHub Player ESP]',err) end; task.wait(.3) end end)
 task.spawn(function() local prev,at=nil,0; while live do local name=detect(); if name~=prev then prev=name; at=os.clock() end; if not panic and name and os.clock()-at>.6 then local confirmed=detect(); if confirmed==name and capture(name,'Automatic') and currentCollection==name then collectionView(name) end end; task.wait(.5) end end)
 task.spawn(function() while live do if dirty or settingsDirty then save() end; task.wait(3) end end)
-_G.EggFarmingHubV103={Stop=stop,Save=save,Capture=capture,ScanEntries=scan,DetectCollection=detect,DetectMutation=selectedMutation,FormatMoney=money,GetCaches=function() return cache end,GetESPSettings=function() return cfg end,Hide=function() setMode('HIDDEN') end,Show=function() setMode('EXPANDED') end,Minimize=function() setMode('MINIMIZED') end}
-print('Egg Farming Hub V10.3 ready | Hide: '..cfg.hideKey..' | Panic: '..cfg.panicKey..' | cache: '..imported)
+_G.EggFarmingHubV104={Stop=stop,Save=save,Capture=capture,ScanEntries=scan,DetectCollection=detect,DetectMutation=selectedMutation,FormatMoney=money,GetCaches=function() return cache end,GetESPSettings=function() return cfg end,Hide=function() setMode('HIDDEN') end,Show=function() setMode('EXPANDED') end,Minimize=function() setMode('MINIMIZED') end}
+print('Egg Farming Hub V10.4 ready | Hide: '..cfg.hideKey..' | Panic: '..cfg.panicKey..' | cache: '..imported)
