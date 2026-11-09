@@ -1,9 +1,9 @@
--- Egg Farming Hub V10.8 | Optimised standalone release
+-- Egg Farming Hub V10.9 | Optimised standalone release
 -- ESP + index tracker only. K hides the hub, not overlays.
 local P=game:GetService('Players'); local U=game:GetService('UserInputService'); local H=game:GetService('HttpService')
 local me=P.LocalPlayer; local pg=me:WaitForChild('PlayerGui')
-for _,key in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108'}) do local old=_G[key]; if type(old)=='table' and type(old.Stop)=='function' then pcall(old.Stop) end end
-for _,name in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108'}) do local g=pg:FindFirstChild(name); if g then g:Destroy() end end
+for _,key in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108','EggFarmingHubV109'}) do local old=_G[key]; if type(old)=='table' and type(old.Stop)=='function' then pcall(old.Stop) end end
+for _,name in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108','EggFarmingHubV109'}) do local g=pg:FindFirstChild(name); if g then g:Destroy() end end
 local live=true; local con={}; local objects={}; local pages={}; local cache={}; local dirty=false; local settingsDirty=false
 local rarities={'Common','Uncommon','Rare','Epic','Legendary','Mythic','Divine','Cosmic','Celestial','Secret','Void','Inferno','Omega','Spectral','Ethereal','Primordial'}
 local mutations={'Gold','Diamond','Lightning','Frozen','Angelic','Hacker','Time','Void'}
@@ -12,19 +12,53 @@ local rc={Common='#B4B4B4',Uncommon='#4BDC5F',Rare='#3791FF',Epic='#AF4BFF',Lege
 local mc={Gold='#FFCD23',Diamond='#55EBFF',Lightning='#FFFF4B',Frozen='#64AFFF',Angelic='#FFFFE1',Hacker='#23FF55',Time='#FF64CD',Void='#9137E6'}
 local function color(hex) return Color3.fromHex(hex or '#FFFFFF') end
 local theme={bg=color('#090D1B'),side=color('#10162B'),panel=color('#151D36'),card=color('#202A48'),border=color('#35507B'),blue=color('#29C7FF'),purple=color('#A16BFF'),white=color('#F1F5FF'),muted=color('#9BAAC1'),green=color('#4CDC91'),red=color('#F55B6E')}
-local cfg={playerSelection={},rarity=false,mutation=false,players=false,animalSize=15,playerSize=17,playerCardWidth=290,playerCardScale=100,playerAutoResize=true,playerColorHex='#FF5050',playerSeparateColors=false,playerHighlightHex='#FF5050',trans=.65,animalBG=.18,playerBG=.15,animalRange=1500,playerRange=1500,unlimitedPlayerRange=false,showIndexStatus=true,missingIndexOnly=false,prioritiseMissing=true,rgb={255,80,80},username=true,distance=true,health=true,speed=true,money=true,selectedR={},selectedM={},hideKey='K',panicKey='P',uiScale=100,uiOpacity=10,accentR=41,accentG=199,accentB=255}
-local folder='EggFarmingHub'; local cf=folder..'/CollectionCacheV108.json'; local sf=folder..'/SettingsV108.json'; local fileOK=type(readfile)=='function' and type(writefile)=='function' and type(isfile)=='function'
+local cfg={playerStyle='Compact',playerOutline=true,playerFill=false,playerThroughWalls=true,playerHeadSide=3,playerBubbleSize=25,playerBubbleBackground=true,playerBubbleDistance=false,playerOverrides={},moneyMode='Rarity Only',minimumIncomeText='20B',showAnimalIncome=true,playerSelection={},rarity=false,mutation=false,players=false,animalSize=15,playerSize=17,playerCardWidth=290,playerCardScale=100,playerAutoResize=true,playerColorHex='#FF5050',playerSeparateColors=false,playerHighlightHex='#FF5050',trans=.65,animalBG=.18,playerBG=.15,animalRange=1500,playerRange=1500,unlimitedPlayerRange=false,showIndexStatus=true,missingIndexOnly=false,prioritiseMissing=true,rgb={255,80,80},username=true,distance=true,health=true,speed=true,money=true,selectedR={},selectedM={},hideKey='K',panicKey='P',uiScale=100,uiOpacity=10,accentR=41,accentG=199,accentB=255}
+local folder='EggFarmingHub'; local cf=folder..'/CollectionCacheV109.json'; local sf=folder..'/SettingsV109.json'; local fileOK=type(readfile)=='function' and type(writefile)=='function' and type(isfile)=='function'
 local function listen(sig,fn) local c=sig:Connect(fn); con[#con+1]=c; return c end
 local function folderReady() if type(makefolder)=='function' then pcall(makefolder,folder) end end
 local function read(path) if not fileOK then return end; local ok,res=pcall(function() if isfile(path) then return H:JSONDecode(readfile(path)) end end); if ok and type(res)=='table' and res.PlaceId==game.PlaceId and res.UserId==me.UserId then return res end end
 local function write(path,data) if not fileOK then return false end; folderReady(); data.PlaceId=game.PlaceId; data.UserId=me.UserId; local ok=pcall(function() writefile(path,H:JSONEncode(data)) end); return ok end
 local imported='None'; local verified=false
-local function load() local s=read(sf) or read(folder..'/SettingsV107.json') or read(folder..'/SettingsV106.json') or read(folder..'/SettingsV105.json') or read(folder..'/SettingsV104.json') or read(folder..'/SettingsV103.json') or read(folder..'/SettingsV102.json') or read(folder..'/SettingsV101.json'); if s then local source=s.Settings or s; for k,v in pairs(source) do if cfg[k]~=nil and type(v)==type(cfg[k]) then cfg[k]=v end end; if s.RarityESP~=nil then cfg.rarity=s.RarityESP end; if s.MutationESP~=nil then cfg.mutation=s.MutationESP end; if s.PlayerESP~=nil then cfg.players=s.PlayerESP end; cfg.selectedR=s.RaritySelected or cfg.selectedR; cfg.selectedM=s.MutationSelected or cfg.selectedM; cfg.rgb=s.PlayerRGB and {s.PlayerRGB.R or 255,s.PlayerRGB.G or 80,s.PlayerRGB.B or 80} or cfg.rgb end
-for _,f in ipairs({cf,folder..'/CollectionCacheV107.json',folder..'/CollectionCacheV106.json',folder..'/CollectionCacheV105.json',folder..'/CollectionCacheV104.json',folder..'/CollectionCacheV103.json',folder..'/CollectionCacheV102.json',folder..'/CollectionCacheV101.json',folder..'/CollectionCacheV100.json',folder..'/CollectionCacheV99.json',folder..'/CollectionCacheV98.json',folder..'/CollectionCacheV97.json',folder..'/CollectionCacheV96.json',folder..'/CollectionCacheV95.json'}) do local d=read(f); if d and type(d.Caches)=='table' then cache=d.Caches; imported=f; dirty=f~=cf; break end end end
+local function load() local s=read(sf) or read(folder..'/SettingsV108.json') or read(folder..'/SettingsV107.json') or read(folder..'/SettingsV106.json') or read(folder..'/SettingsV105.json') or read(folder..'/SettingsV104.json') or read(folder..'/SettingsV103.json') or read(folder..'/SettingsV102.json') or read(folder..'/SettingsV101.json'); if s then local source=s.Settings or s; for k,v in pairs(source) do if cfg[k]~=nil and type(v)==type(cfg[k]) then cfg[k]=v end end; if s.RarityESP~=nil then cfg.rarity=s.RarityESP end; if s.MutationESP~=nil then cfg.mutation=s.MutationESP end; if s.PlayerESP~=nil then cfg.players=s.PlayerESP end; cfg.selectedR=s.RaritySelected or cfg.selectedR; cfg.selectedM=s.MutationSelected or cfg.selectedM; cfg.rgb=s.PlayerRGB and {s.PlayerRGB.R or 255,s.PlayerRGB.G or 80,s.PlayerRGB.B or 80} or cfg.rgb end
+for _,f in ipairs({cf,folder..'/CollectionCacheV108.json',folder..'/CollectionCacheV107.json',folder..'/CollectionCacheV106.json',folder..'/CollectionCacheV105.json',folder..'/CollectionCacheV104.json',folder..'/CollectionCacheV103.json',folder..'/CollectionCacheV102.json',folder..'/CollectionCacheV101.json',folder..'/CollectionCacheV100.json',folder..'/CollectionCacheV99.json',folder..'/CollectionCacheV98.json',folder..'/CollectionCacheV97.json',folder..'/CollectionCacheV96.json',folder..'/CollectionCacheV95.json'}) do local d=read(f); if d and type(d.Caches)=='table' then cache=d.Caches; imported=f; dirty=f~=cf; break end end end
 load()
-local function save() local ok=write(cf,{Version='10.8',Caches=cache}); if ok then local d=read(cf); verified=d and type(d.Caches)=='table' or false; if verified then dirty=false end end; write(sf,{Version='10.8',Settings=cfg}); settingsDirty=false; return verified end
+local function save() local ok=write(cf,{Version='10.9',Caches=cache}); if ok then local d=read(cf); verified=d and type(d.Caches)=='table' or false; if verified then dirty=false end end; write(sf,{Version='10.9',Settings=cfg}); settingsDirty=false; return verified end
 local suffix={{1e36,'Ud'},{1e33,'Dc'},{1e30,'No'},{1e27,'Oc'},{1e24,'Sp'},{1e21,'Sx'},{1e18,'Qi'},{1e15,'Qa'},{1e12,'T'},{1e9,'B'},{1e6,'M'},{1e3,'K'}}
 local function money(n) if type(n)~='number' then return 'N/A' end; if n~=n then return 'N/A' end; local sign=n<0 and '-$' or '$'; n=math.abs(n); for _,e in ipairs(suffix) do if n>=e[1] then local x=string.format('%.2f',math.floor(n/e[1]*100)/100):gsub('0+$',''):gsub('%.$',''); return sign..x..e[2] end end; return sign..math.floor(n) end
+local function parseIncome(value)
+    if type(value)=='number' then return value end
+    if type(value)~='string' then return nil end
+    local cleaned=value:gsub(',',''):gsub('%$',''):gsub('%s',''):gsub('/[sS]$','')
+    local number,suf=cleaned:match('^([%d%.]+)(%a*)$')
+    if not number then return nil end
+    local n=tonumber(number); if not n then return nil end
+    if suf=='' then return n end
+    for _,v in ipairs(suffix) do if v[2]:lower()==suf:lower() then return n*v[1] end end
+    return nil
+end
+local function animalIncome(model)
+    for _,obj in ipairs({model,model:FindFirstChild('RootPart')}) do
+        if obj then
+            for _,key in ipairs({'MoneyPerSecond','IncomePerSecond','CashPerSecond','EarningsPerSecond','MoneyPS','Income','CashPerSec','ValuePerSecond'}) do
+                local v=obj:GetAttribute(key)
+                if v~=nil then local n=parseIncome(v); if n then return n end end
+                local child=obj:FindFirstChild(key)
+                if child and child:IsA('ValueBase') then local n=parseIncome(child.Value); if n then return n end end
+            end
+        end
+    end
+    -- Displayed $/s is used only when a numeric label can be read reliably.
+    for _,d in ipairs(model:GetDescendants()) do
+        if d:IsA('TextLabel') then
+            local t=d.Text
+            if t:find('%$') and (t:find('/s') or t:find('/S')) then
+                local n=parseIncome(t:match('%$[%d%.,]+%a*') or '')
+                if n then return n end
+            end
+        end
+    end
+    return nil
+end
 local function playerMoney(p) for _,host in ipairs({p:FindFirstChild('leaderstats'),p}) do if host then for _,name in ipairs({'Money','Cash','Coins','Currency','Gold','Balance','Dollars'}) do local v=host:FindFirstChild(name); if v and (v:IsA('IntValue') or v:IsA('NumberValue')) then return v.Value end; local a=host:GetAttribute(name); if type(a)=='number' then return a end end end end end
 local function mutationOf(m) for _,key in ipairs({'Mutation','MutationType'}) do local value=m:GetAttribute(key); if type(value)=='string' then for _,name in ipairs(mutations) do if value:match('^%s*(.-)%s*$'):lower()==name:lower() then return name end end end end end
 local function new(class,parent,props) local x=Instance.new(class); for k,v in pairs(props or {}) do x[k]=v end; x.Parent=parent; return x end
@@ -75,8 +109,8 @@ local function lookupIndex(model,mutation)
     if status=='MISSING' then return 'NEEDED',collection end
     return 'UNKNOWN',collection
 end
-local function animalESP() local folder=workspace:FindFirstChild('AnimalPickups'); local seen={}; if folder then for _,m in ipairs(folder:GetChildren()) do if m:IsA('Model') then local r=tostring(m:GetAttribute('Rarity') or ''); local mut=mutationOf(m); local match=(cfg.rarity and cfg.selectedR[r]) or (cfg.mutation and mut and cfg.selectedM[mut]); local indexStatus,indexCollection=lookupIndex(m,mut); if cfg.missingIndexOnly and indexStatus~='NEEDED' then match=false end; local root=rootOf(m); if match and root and distance(root)<=cfg.animalRange then seen[m]=true; local d=objects[m]; if not d or d[2].Adornee~=root then local card=bill(m,root,false); d=objects[m]; d.kind='animal'; d.card=card; local bar=round(new('Frame',card.frame,{Size=UDim2.fromOffset(4,62),Position=UDim2.fromOffset(8,12),BorderSizePixel=0}),3); d.bar=bar; d.title=text(card.frame,'',cfg.animalSize,{Size=UDim2.new(1,-32,0,27),Position=UDim2.fromOffset(22,7),Font=Enum.Font.GothamBold}); d.rarity=text(card.frame,'',11,{Size=UDim2.new(.52,-22,0,20),Position=UDim2.fromOffset(22,35),Font=Enum.Font.GothamBold}); d.mutation=text(card.frame,'',11,{Size=UDim2.new(.48,0,0,20),Position=UDim2.new(.52,0,0,35),Font=Enum.Font.GothamBold}); d.dist=text(card.frame,'',11,{Size=UDim2.new(1,-32,0,20),Position=UDim2.fromOffset(22,59),TextColor3=theme.muted}); d.indexStatus=text(card.frame,'',11,{Size=UDim2.new(1,-28,0,21),Position=UDim2.fromOffset(22,80),Font=Enum.Font.GothamBold}) end
-local c=color((mut and cfg.mutation and cfg.selectedM[mut]) and mc[mut] or rc[r]); d[1].FillColor=c; d[1].OutlineColor=c; d.card.stroke.Color=c; d.bar.BackgroundColor3=c; d.card.frame.BackgroundTransparency=cfg.animalBG; d.title.Text=tostring(m:GetAttribute('AnimalName') or m.Name); d.title.TextSize=cfg.animalSize; d.rarity.Text=r:upper(); d.rarity.TextColor3=color(rc[r]); d.rarity.TextSize=math.max(10,cfg.animalSize-4); d.mutation.Text=mut and ('★ '..mut:upper()) or ''; d.mutation.TextColor3=color(mc[mut]); d.dist.Text=distance(root)..' STUDS'; d.indexStatus.Visible=cfg.showIndexStatus; d.indexStatus.Text=indexStatus=='NEEDED' and ('● NEEDED / '..indexCollection:upper()..' INDEX') or indexStatus=='COLLECTED' and ('✓ COLLECTED / '..indexCollection:upper()) or ('? UNKNOWN / '..indexCollection:upper()..' INDEX'); d.indexStatus.TextColor3=indexStatus=='NEEDED' and theme.red or indexStatus=='COLLECTED' and theme.green or theme.muted; local urgent=cfg.prioritiseMissing and indexStatus=='NEEDED'; if urgent then d.card.stroke.Color=theme.red; d.card.stroke.Thickness=2.5; d.bar.BackgroundColor3=theme.red else d.card.stroke.Thickness=1.3 end; local scale=math.clamp(1-distance(root)/3000,.65,1); d[2].Size=UDim2.fromOffset(math.floor(260*scale),math.floor((cfg.showIndexStatus and 108 or 85)*scale)) else erase(m) end end end end
+local function animalESP() local folder=workspace:FindFirstChild('AnimalPickups'); local seen={}; if folder then for _,m in ipairs(folder:GetChildren()) do if m:IsA('Model') then local r=tostring(m:GetAttribute('Rarity') or ''); local mut=mutationOf(m); local rarityMatch=(cfg.rarity and cfg.selectedR[r]) or (cfg.mutation and mut and cfg.selectedM[mut]); local indexStatus,indexCollection=lookupIndex(m,mut); local income=animalIncome(m); local threshold=parseIncome(cfg.minimumIncomeText) or 0; local moneyMatch=income~=nil and income>=threshold; local missingMatch=indexStatus=='NEEDED'; local modeName=cfg.moneyMode; local match=modeName=='All Animals' or (modeName=='Rarity Only' and rarityMatch) or (modeName=='Rarity + Money' and rarityMatch and moneyMatch) or (modeName=='Rarity + Index Missing' and rarityMatch and missingMatch) or (modeName=='Rarity + Money + Index Missing' and rarityMatch and moneyMatch and missingMatch) or (modeName=='Money Only' and moneyMatch) or (modeName=='Money + Index Missing' and moneyMatch and missingMatch) or (modeName=='Index Missing Only' and missingMatch); if cfg.missingIndexOnly and not missingMatch then match=false end; local root=rootOf(m); if match and root and distance(root)<=cfg.animalRange then seen[m]=true; local d=objects[m]; if not d or d[2].Adornee~=root then local card=bill(m,root,false); d=objects[m]; d.kind='animal'; d.card=card; local bar=round(new('Frame',card.frame,{Size=UDim2.fromOffset(4,62),Position=UDim2.fromOffset(8,12),BorderSizePixel=0}),3); d.bar=bar; d.title=text(card.frame,'',cfg.animalSize,{Size=UDim2.new(1,-32,0,27),Position=UDim2.fromOffset(22,7),Font=Enum.Font.GothamBold}); d.rarity=text(card.frame,'',11,{Size=UDim2.new(.52,-22,0,20),Position=UDim2.fromOffset(22,35),Font=Enum.Font.GothamBold}); d.mutation=text(card.frame,'',11,{Size=UDim2.new(.48,0,0,20),Position=UDim2.new(.52,0,0,35),Font=Enum.Font.GothamBold}); d.dist=text(card.frame,'',11,{Size=UDim2.new(1,-32,0,20),Position=UDim2.fromOffset(22,59),TextColor3=theme.muted}); d.indexStatus=text(card.frame,'',11,{Size=UDim2.new(1,-28,0,21),Position=UDim2.fromOffset(22,80),Font=Enum.Font.GothamBold}); d.income=text(card.frame,'',11,{Size=UDim2.new(1,-28,0,20),Position=UDim2.fromOffset(22,101),Font=Enum.Font.GothamBold,TextColor3=theme.green}) end
+local c=color((mut and cfg.mutation and cfg.selectedM[mut]) and mc[mut] or rc[r]); d[1].FillColor=c; d[1].OutlineColor=c; d.card.stroke.Color=c; d.bar.BackgroundColor3=c; d.card.frame.BackgroundTransparency=cfg.animalBG; d.title.Text=tostring(m:GetAttribute('AnimalName') or m.Name); d.title.TextSize=cfg.animalSize; d.rarity.Text=r:upper(); d.rarity.TextColor3=color(rc[r]); d.rarity.TextSize=math.max(10,cfg.animalSize-4); d.mutation.Text=mut and ('★ '..mut:upper()) or ''; d.mutation.TextColor3=color(mc[mut]); d.dist.Text=distance(root)..' STUDS'; d.income.Visible=cfg.showAnimalIncome; d.income.Text=income and (money(income)..'/s') or 'INCOME UNKNOWN'; d.indexStatus.Visible=cfg.showIndexStatus; d.indexStatus.Text=indexStatus=='NEEDED' and ('● NEEDED / '..indexCollection:upper()..' INDEX') or indexStatus=='COLLECTED' and ('✓ COLLECTED / '..indexCollection:upper()) or ('? UNKNOWN / '..indexCollection:upper()..' INDEX'); d.indexStatus.TextColor3=indexStatus=='NEEDED' and theme.red or indexStatus=='COLLECTED' and theme.green or theme.muted; local urgent=cfg.prioritiseMissing and indexStatus=='NEEDED'; if urgent then d.card.stroke.Color=theme.red; d.card.stroke.Thickness=2.5; d.bar.BackgroundColor3=theme.red else d.card.stroke.Thickness=1.3 end; local scale=math.clamp(1-distance(root)/3000,.65,1); d[2].Size=UDim2.fromOffset(math.floor(260*scale),math.floor((85+(cfg.showIndexStatus and 23 or 0)+(cfg.showAnimalIncome and 21 or 0))*scale)) else erase(m) end end end end
 for m,d in pairs(objects) do if d.kind=='animal' and not seen[m] then erase(m) end end end
 local function validHex(v)
     if type(v)~='string' then return nil end
@@ -89,12 +123,13 @@ local function playerESP()
         if p~=me and p.Character then
             local m=p.Character
             local root=m:FindFirstChild('HumanoidRootPart')
+            local head=m:FindFirstChild('Head') or root
             local hum=m:FindFirstChildOfClass('Humanoid')
-            if cfg.players and cfg.playerSelection[tostring(p.UserId)]~=false and root and hum and hum.Health>0 and (cfg.unlimitedPlayerRange or distance(root)<=cfg.playerRange) then
+            if cfg.players and cfg.playerSelection[tostring(p.UserId)]~=false and root and head and hum and hum.Health>0 and (cfg.unlimitedPlayerRange or distance(root)<=cfg.playerRange) then
                 seen[m]=true
                 local d=objects[m]
-                if not d or not d[2] or d[2].Adornee~=root then
-                    local card=bill(m,root,true)
+                if not d or not d[2] or d[2].Adornee~=head then
+                    local card=bill(m,head,true)
                     d=objects[m]; d.kind='player'; d.card=card
                     d.name=text(card.frame,'',cfg.playerSize,{Font=Enum.Font.GothamBold,TextTruncate=Enum.TextTruncate.AtEnd})
                     d.user=text(card.frame,'',12,{TextColor3=theme.muted,TextTruncate=Enum.TextTruncate.AtEnd})
@@ -105,45 +140,74 @@ local function playerESP()
                     d.dist=text(card.frame,'',12)
                     d.money=text(card.frame,'',14,{Font=Enum.Font.GothamBold,TextColor3=theme.green})
                 end
-                local cardColor=color(validHex(cfg.playerColorHex) or '#FF5050')
+                local override=cfg.playerOverrides[tostring(p.UserId)] or {}
+                local style=override.style and override.style~='Default' and override.style or cfg.playerStyle
+                local outline=override.outline=='On' and true or override.outline=='Off' and false or cfg.playerOutline
+                local cardColor=color(validHex(override.color or cfg.playerColorHex) or '#FF5050')
                 local highlightColor=cfg.playerSeparateColors and color(validHex(cfg.playerHighlightHex) or '#FF5050') or cardColor
-                d[1].FillColor=highlightColor; d[1].OutlineColor=highlightColor; d[1].FillTransparency=cfg.trans
+                d[1].Enabled=outline or cfg.playerFill
+                d[1].OutlineTransparency=outline and 0 or 1
+                d[1].FillTransparency=cfg.playerFill and cfg.trans or 1
+                d[1].FillColor=highlightColor; d[1].OutlineColor=highlightColor
+                d[1].DepthMode=cfg.playerThroughWalls and Enum.HighlightDepthMode.AlwaysOnTop or Enum.HighlightDepthMode.Occluded
                 d.card.stroke.Color=cardColor; d.card.frame.BackgroundTransparency=cfg.playerBG
                 local width=math.clamp(tonumber(cfg.playerCardWidth) or 290,140,400)
                 local scale=math.clamp((tonumber(cfg.playerCardScale) or 100)/100,.5,1.5)
                 local pad=12; local inner=width-pad*2; local y=8
                 local function place(label,h)
-                    label.Visible=true
-                    label.Position=UDim2.fromOffset(pad,y)
-                    label.Size=UDim2.fromOffset(inner,h)
-                    y=y+h+4
+                    label.Visible=true; label.Position=UDim2.fromOffset(pad,y)
+                    label.Size=UDim2.fromOffset(inner,h); y=y+h+4
                 end
-                d.name.Text=p.DisplayName; d.name.TextSize=cfg.playerSize; place(d.name,math.max(23,cfg.playerSize+8))
-                d.user.Visible=cfg.username
-                if cfg.username then d.user.Text='@'..p.Name; place(d.user,17) elseif not cfg.playerAutoResize then y=y+21 end
-                local pct=math.clamp(hum.Health/math.max(1,hum.MaxHealth),0,1)
-                d.track.Visible=cfg.health; d.hp.Visible=cfg.health
-                if cfg.health then
-                    d.track.Position=UDim2.fromOffset(pad,y); d.track.Size=UDim2.fromOffset(inner,8)
-                    d.fill.Size=UDim2.fromScale(pct,1)
-                    d.fill.BackgroundColor3=pct>.6 and theme.green or (pct>.3 and color('#FFCD46') or theme.red)
-                    y=y+12; d.hp.Text=('HP %d/%d'):format(hum.Health,hum.MaxHealth); place(d.hp,17)
-                elseif not cfg.playerAutoResize then y=y+33 end
-                d.speed.Visible=cfg.speed; d.dist.Visible=cfg.distance
-                d.speed.Text=('SPEED %.1f'):format(hum.WalkSpeed); d.dist.Text=distance(root)..' STUDS'
-                if cfg.speed and cfg.distance then
-                    d.speed.Position=UDim2.fromOffset(pad,y); d.speed.Size=UDim2.fromOffset(math.floor(inner*.52),20)
-                    d.dist.Position=UDim2.fromOffset(pad+math.floor(inner*.52),y); d.dist.Size=UDim2.fromOffset(math.floor(inner*.48),20)
-                    y=y+24
-                elseif cfg.speed then place(d.speed,20)
-                elseif cfg.distance then place(d.dist,20)
-                elseif not cfg.playerAutoResize then y=y+24 end
-                d.money.Visible=cfg.money
-                if cfg.money then d.money.Text='MONEY '..money(playerMoney(p)); place(d.money,23)
-                elseif not cfg.playerAutoResize then y=y+27 end
-                local height=cfg.playerAutoResize and math.max(39,y+5) or math.max(178,y+5)
+                for _,label in ipairs({d.name,d.user,d.track,d.hp,d.speed,d.dist,d.money}) do label.Visible=false end
+                d.card.frame.Visible=style~='Outline Only'
+                if style=='Bubble Name' then
+                    width=math.clamp(tonumber(cfg.playerCardWidth) or 290,140,400)
+                    inner=width-pad*2
+                    d.name.Text=p.DisplayName; d.name.TextSize=cfg.playerBubbleSize
+                    d.name.Font=Enum.Font.FredokaOne
+                    d.name.TextXAlignment=Enum.TextXAlignment.Center
+                    d.name.TextStrokeTransparency=.15
+                    d.name.TextStrokeColor3=Color3.new(0,0,0)
+                    d.name.TextColor3=cardColor
+                    place(d.name,math.max(35,cfg.playerBubbleSize+13))
+                    if cfg.playerBubbleDistance then
+                        d.dist.Text=distance(root)..' STUDS'; d.dist.TextXAlignment=Enum.TextXAlignment.Center; place(d.dist,18)
+                    end
+                    d.card.frame.BackgroundTransparency=cfg.playerBubbleBackground and cfg.playerBG or 1
+                    d.card.stroke.Enabled=cfg.playerBubbleBackground
+                    d[2].StudsOffset=Vector3.new(0,3,0)
+                elseif style~='Outline Only' then
+                    d.name.Font=Enum.Font.GothamBold; d.name.TextXAlignment=Enum.TextXAlignment.Left
+                    d.name.TextStrokeTransparency=1; d.name.TextColor3=theme.white
+                    d.name.Text=p.DisplayName; d.name.TextSize=cfg.playerSize; place(d.name,math.max(23,cfg.playerSize+8))
+                    if style=='Detailed' then
+                        if cfg.username then d.user.Text='@'..p.Name; place(d.user,17) elseif not cfg.playerAutoResize then y=y+21 end
+                        if cfg.health then
+                            local pct=math.clamp(hum.Health/math.max(1,hum.MaxHealth),0,1)
+                            d.track.Visible=true; d.track.Position=UDim2.fromOffset(pad,y); d.track.Size=UDim2.fromOffset(inner,8)
+                            d.fill.Size=UDim2.fromScale(pct,1)
+                            d.fill.BackgroundColor3=pct>.6 and theme.green or (pct>.3 and color('#FFCD46') or theme.red)
+                            y=y+12; d.hp.Text=('HP %d/%d'):format(hum.Health,hum.MaxHealth); place(d.hp,17)
+                        elseif not cfg.playerAutoResize then y=y+33 end
+                    end
+                    local fields={}
+                    if cfg.speed then table.insert(fields,('SPD %.1f'):format(hum.WalkSpeed)) end
+                    if cfg.distance then table.insert(fields,distance(root)..' STUDS') end
+                    if #fields>0 then d.speed.Text=table.concat(fields,'  •  '); place(d.speed,20) end
+                    if cfg.money then d.money.Text=money(playerMoney(p)); place(d.money,23) end
+                    if style=='Compact' and cfg.health then
+                        local pct=math.clamp(hum.Health/math.max(1,hum.MaxHealth),0,1)
+                        d.track.Visible=true; d.track.Position=UDim2.fromOffset(pad,y); d.track.Size=UDim2.fromOffset(inner,5)
+                        d.fill.Size=UDim2.fromScale(pct,1); y=y+9
+                    end
+                    d.card.stroke.Enabled=true
+                    d[2].StudsOffset=Vector3.new(cfg.playerHeadSide,1,0)
+                else
+                    d[2].StudsOffset=Vector3.new(0,2,0)
+                end
+                local height=style=='Outline Only' and 1 or (cfg.playerAutoResize and math.max(39,y+5) or math.max(178,y+5))
+                d[2].Enabled=style~='Outline Only'
                 d[2].Size=UDim2.fromOffset(math.floor(width*scale),math.floor(height*scale))
-                d[2].StudsOffset=Vector3.new(0,5,0)
             else erase(m) end
         end
     end
@@ -163,7 +227,7 @@ local function detect() local i=index(); if not i then return nil,'INDEX_MISSING
 local function scan() local entries={}; local seen={}; local i=index(); if not i then return entries end; for _,list in ipairs(i:GetDescendants()) do if list.Name=='AnimalList' then local zone=list.Parent and list.Parent.Name or 'Unknown'; for _,frame in ipairs(list:GetChildren()) do if frame:IsA('Frame') and frame.Name~='Template' then local inner=frame:FindFirstChild('Inner'); local label=inner and inner:FindFirstChild('Name'); if label and label:IsA('TextLabel') then local key=zone..'|'..frame.Name; if not seen[key] then seen[key]=true; local gradient=inner:FindFirstChild('UIGradient'); local rarity=gradient and gradient:GetAttribute('Rarity') or frame:GetAttribute('Rarity') or 'Unknown'; entries[#entries+1]={Zone=zone,InternalName=frame.Name,Name=label.Text=='???' and frame.Name or label.Text,Rarity=tostring(rarity),Status=label.Text=='???' and 'MISSING' or 'COLLECTED'} end end end end end end; table.sort(entries,function(a,b) if a.Zone~=b.Zone then local x=tonumber(a.Zone:match('[Zz]one(%d+)')); local y=tonumber(b.Zone:match('[Zz]one(%d+)')); if x and y then return x<y end; return x~=nil end; return a.InternalName<b.InternalName end); return entries end
 local function stats(entries) local s={RegularTotal=0,RegularCollected=0,EventTotal=0,EventCollected=0}; for _,e in ipairs(entries) do local event=not e.Zone:match('[Zz]one%d+'); local prefix=event and 'Event' or 'Regular'; s[prefix..'Total']+=1; if e.Status=='COLLECTED' then s[prefix..'Collected']+=1 end end; return s end
 local function capture(name,source) if not name then return false end; local entries=scan(); local s=stats(entries); local a,b=progressNumbers(); if s.RegularTotal~=120 or s.EventTotal~=15 then return false end; if name=='Limited' then if b~=15 or a~=s.EventCollected then return false end else if b~=120 or a~=s.RegularCollected then return false end end; local sig=H:JSONEncode(entries)..'|'..progressText(); if cache[name] and cache[name].Signature==sig then return false end; cache[name]={Entries=entries,Stats=s,Progress=progressText(),Signature=sig,Source=source or 'Manual',UpdatedAt=os.time()}; dirty=true; return true end
-local gui=new('ScreenGui',pg,{Name='EggFarmingHubV108',ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling}); local main=round(new('Frame',gui,{Size=UDim2.fromOffset(780,580),Position=UDim2.new(.5,-390,.5,-290),BackgroundColor3=theme.bg,BorderSizePixel=0,Active=true}),12); border(main); local head=new('Frame',main,{Size=UDim2.new(1,0,0,58),BackgroundColor3=theme.side,BorderSizePixel=0,Active=true}); text(head,'EGG FARMING HUB',18,{Size=UDim2.new(1,-120,0,28),Position=UDim2.fromOffset(18,5),Font=Enum.Font.GothamBold}); text(head,'V10.8  /  NEON EDITION  /  K TO HIDE',10,{Size=UDim2.new(1,-120,0,20),Position=UDim2.fromOffset(18,31),TextColor3=theme.muted});
+local gui=new('ScreenGui',pg,{Name='EggFarmingHubV109',ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling}); local main=round(new('Frame',gui,{Size=UDim2.fromOffset(780,580),Position=UDim2.new(.5,-390,.5,-290),BackgroundColor3=theme.bg,BorderSizePixel=0,Active=true}),12); border(main); local head=new('Frame',main,{Size=UDim2.new(1,0,0,58),BackgroundColor3=theme.side,BorderSizePixel=0,Active=true}); text(head,'EGG FARMING HUB',18,{Size=UDim2.new(1,-120,0,28),Position=UDim2.fromOffset(18,5),Font=Enum.Font.GothamBold}); text(head,'V10.9  /  NEON EDITION  /  K TO HIDE',10,{Size=UDim2.new(1,-120,0,20),Position=UDim2.fromOffset(18,31),TextColor3=theme.muted});
 new('UIGradient',main,{Rotation=125,Color=ColorSequence.new({ColorSequenceKeypoint.new(0,color('#111C39')),ColorSequenceKeypoint.new(.55,color('#090D1B')),ColorSequenceKeypoint.new(1,color('#1B1237'))})})
 new('UIStroke',main,{Color=theme.blue,Thickness=1.5,Transparency=.25})
 new('Frame',head,{Size=UDim2.new(1,0,0,3),Position=UDim2.new(0,0,1,-3),BorderSizePixel=0,BackgroundColor3=theme.blue})
@@ -171,7 +235,7 @@ local uiScaler=new('UIScale',main,{Scale=math.clamp((cfg.uiScale or 100)/100,.7,
 theme.blue=Color3.fromRGB(cfg.accentR or 41,cfg.accentG or 199,cfg.accentB or 255)
 local function btn(parent,title,fn,props) props=props or {}; props.Size=props.Size or UDim2.new(1,0,0,36); props.BackgroundColor3=props.BackgroundColor3 or theme.card; props.Text=title; props.TextColor3=props.TextColor3 or theme.white; props.Font=Enum.Font.GothamBold; props.TextSize=props.TextSize or 12; props.BorderSizePixel=0; local b=round(new('TextButton',parent,props),7); if fn then b.MouseButton1Click:Connect(function() if live then fn(b) end end) end; return b end
 local sidebar=new('Frame',main,{Size=UDim2.new(0,170,1,-104),Position=UDim2.fromOffset(0,58),BackgroundColor3=theme.side,BorderSizePixel=0}); new('UIPadding',sidebar,{PaddingTop=UDim.new(0,14),PaddingLeft=UDim.new(0,10),PaddingRight=UDim.new(0,10)}); new('UIListLayout',sidebar,{Padding=UDim.new(0,7),SortOrder=Enum.SortOrder.LayoutOrder}); local body=new('Frame',main,{Size=UDim2.new(1,-170,1,-104),Position=UDim2.fromOffset(170,58),BackgroundTransparency=1}); local foot=new('Frame',main,{Size=UDim2.new(1,0,0,46),Position=UDim2.new(0,0,1,-46),BackgroundColor3=theme.side,BorderSizePixel=0}); local floating=round(btn(gui,'EGG',nil,{Size=UDim2.fromOffset(58,58),Position=UDim2.new(0,24,.5,-29),BackgroundColor3=theme.blue,Visible=false,Active=true,TextSize=14}),29); border(floating,theme.white)
-local pageNames={'Dashboard','Animal ESP','Player ESP','Animals','Mutations','Settings'}; local tab='Dashboard'; local mode='EXPANDED'; local nav={}; local showTab
+local pageNames={'Dashboard','Animal ESP','Player ESP','Money','Animals','Mutations','Settings'}; local tab='Dashboard'; local mode='EXPANDED'; local nav={}; local showTab
 local function page(name) local p=new('ScrollingFrame',body,{Name=name,Size=UDim2.new(1,-28,1,-24),Position=UDim2.fromOffset(14,12),BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=4,ScrollBarImageColor3=theme.blue,AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),Visible=false}); new('UIPadding',p,{PaddingBottom=UDim.new(0,18)}); new('UIListLayout',p,{Padding=UDim.new(0,9),SortOrder=Enum.SortOrder.LayoutOrder}); return p end
 for _,name in ipairs(pageNames) do pages[name]=page(name) end
 local function clear(p) for _,x in ipairs(p:GetChildren()) do if x:IsA('GuiObject') then x:Destroy() end end end
@@ -225,6 +289,20 @@ local function dropdown(p,title,options,chosen,onPick)
             chosen=value; setOpen(false); onPick(value)
         end,{Size=UDim2.new(1,-7,0,35),LayoutOrder=i,BackgroundColor3=value==chosen and theme.blue or theme.card,TextXAlignment=Enum.TextXAlignment.Left})
     end
+end
+local moneyModes={'Rarity Only','Rarity + Money','Rarity + Index Missing','Rarity + Money + Index Missing','Money Only','Money + Index Missing','Index Missing Only','All Animals'}
+render.Money=function()
+    local p=pages.Money; clear(p)
+    section(p,'MONEY FILTERS')
+    line(p,'Filter animal ESP by displayed income per second. Animals with unknown income do not pass money filters.',12,60,theme.muted)
+    dropdown(p,'ESP FILTER MODE',moneyModes,cfg.moneyMode,function(v) cfg.moneyMode=v; settingsDirty=true; render.Money() end)
+    section(p,'MINIMUM INCOME / SECOND')
+    local row=round(new('Frame',p,{Size=UDim2.new(1,0,0,66),BackgroundColor3=theme.panel,BorderSizePixel=0}),9)
+    text(row,'Minimum $/s',13,{Size=UDim2.new(.4,0,1,0),Position=UDim2.fromOffset(14,0)})
+    local box=round(new('TextBox',row,{Size=UDim2.new(.46,0,0,38),Position=UDim2.new(.52,0,.5,-19),BackgroundColor3=theme.card,TextColor3=theme.white,Text=cfg.minimumIncomeText,PlaceholderText='e.g. 20B, 1.5T, 10Qi',Font=Enum.Font.Gotham,TextSize=14,ClearTextOnFocus=false,BorderSizePixel=0}),8)
+    box.FocusLost:Connect(function() if parseIncome(box.Text) then cfg.minimumIncomeText=box.Text; settingsDirty=true else box.Text=cfg.minimumIncomeText end end)
+    toggle(p,'Show animal income on ESP cards','showAnimalIncome')
+    line(p,'Income is read from replicated animal attributes or visible $/s labels when available. Unknown values are never guessed.',11,65,theme.muted)
 end
 local function collectionView(name)
     currentCollection=name
@@ -304,6 +382,15 @@ end
 render['Player ESP']=function()
     local p=pages['Player ESP']; clear(p)
     section(p,'PLAYER ESP')
+    dropdown(p,'ESP STYLE',{'Compact','Bubble Name','Detailed','Outline Only'},cfg.playerStyle,function(v) cfg.playerStyle=v; settingsDirty=true; render['Player ESP']() end)
+    toggle(p,'Outline around character','playerOutline')
+    toggle(p,'Body fill highlight','playerFill')
+    toggle(p,'Outline visible through walls','playerThroughWalls')
+    slider(p,'Head-side card offset',0,8,function() return cfg.playerHeadSide end,function(v) cfg.playerHeadSide=v end)
+    section(p,'BUBBLE NAME SETTINGS')
+    slider(p,'Bubble font size',16,40,function() return cfg.playerBubbleSize end,function(v) cfg.playerBubbleSize=v end)
+    toggle(p,'Bubble background','playerBubbleBackground')
+    toggle(p,'Bubble distance','playerBubbleDistance')
     toggle(p,'Enable Player ESP','players')
     section(p,'CARD APPEARANCE')
     toggle(p,'Auto-resize cards to visible information','playerAutoResize')
@@ -408,6 +495,13 @@ render['Player ESP']=function()
         btn(row,enabled and 'ON' or 'OFF',function()
             cfg.playerSelection[id]=not enabled; settingsDirty=true; render['Player ESP']()
         end,{Size=UDim2.fromOffset(77,34),Position=UDim2.new(1,-91,.5,-17),BackgroundColor3=enabled and theme.blue or theme.card})
+        local override=cfg.playerOverrides[id] or {}
+        dropdown(page,target.DisplayName..' STYLE',{'Default','Compact','Bubble Name','Detailed','Outline Only'},override.style or 'Default',function(v)
+            cfg.playerOverrides[id]=cfg.playerOverrides[id] or {}; cfg.playerOverrides[id].style=v; settingsDirty=true; render['Player ESP']()
+        end)
+        dropdown(page,target.DisplayName..' OUTLINE',{'Default','On','Off'},override.outline or 'Default',function(v)
+            cfg.playerOverrides[id]=cfg.playerOverrides[id] or {}; cfg.playerOverrides[id].outline=v; settingsDirty=true; render['Player ESP']()
+        end)
     end
     action(page,'REFRESH PLAYER LIST',function() render['Player ESP']() end,theme.card)
 end
@@ -427,7 +521,7 @@ local function panicToggle()
         end
         panicBackup=nil; mode='EXPANDED'; main.Visible=true
         floating.Visible=false
-        showTab(mainTab=='ESP' and espSub or (mainTab=='Index' and indexSub or 'Settings'))
+        showTab(mainTab=='ESP' and espSub or (mainTab=='Money' and 'Money' or (mainTab=='Players' and 'Player ESP' or (mainTab=='Index' and indexSub or 'Settings'))))
     end
 end
 local function keyPicker(p,title,key)
@@ -461,6 +555,7 @@ showTab=function(name)
     tab=name; currentCollection=nil
     if name=='Animal ESP' then mainTab='ESP'; espSub=name
     elseif name=='Player ESP' then mainTab='Players'
+    elseif name=='Money' then mainTab='Money'
     elseif name=='Animals' or name=='Mutations' then mainTab='Index'; indexSub=name
     elseif name=='Settings' then mainTab='Settings' end
     for n,p in pairs(pages) do p.Visible=mode=='EXPANDED' and n==name end
@@ -468,9 +563,9 @@ showTab=function(name)
     render[name]()
     pages[name].CanvasPosition=Vector2.new(0,0)
 end
-for i,name in ipairs({'ESP','Players','Index','Settings'}) do
-    nav[name]=btn(sidebar,({'◎ ','◉ ','▦ ','⚙ '})[i]..name,function()
-        showTab(name=='ESP' and 'Animal ESP' or (name=='Players' and 'Player ESP' or (name=='Index' and indexSub or 'Settings')))
+for i,name in ipairs({'ESP','Money','Players','Index','Settings'}) do
+    nav[name]=btn(sidebar,({'◎ ','＄ ','◉ ','▦ ','⚙ '})[i]..name,function()
+        showTab(name=='ESP' and 'Animal ESP' or (name=='Money' and 'Money' or (name=='Players' and 'Player ESP' or (name=='Index' and indexSub or 'Settings'))))
     end,{Size=UDim2.new(1,0,0,44),LayoutOrder=i,BackgroundColor3=theme.side,TextXAlignment=Enum.TextXAlignment.Left})
 end
 local function setMode(v) mode=v; main.Visible=v=='EXPANDED'; floating.Visible=v=='MINIMIZED'; for n,p in pairs(pages) do p.Visible=v=='EXPANDED' and n==tab end end
@@ -508,5 +603,5 @@ task.spawn(function() while live do local ok,err=pcall(animalESP); if not ok the
 task.spawn(function() while live do local ok,err=pcall(playerESP); if not ok then warn('[EggHub Player ESP]',err) end; task.wait(.3) end end)
 task.spawn(function() local prev,at=nil,0; while live do local name=detect(); if name~=prev then prev=name; at=os.clock() end; if not panic and name and os.clock()-at>.6 then local confirmed=detect(); if confirmed==name and capture(name,'Automatic') and currentCollection==name then collectionView(name) end end; task.wait(.5) end end)
 task.spawn(function() while live do if dirty or settingsDirty then save() end; task.wait(3) end end)
-_G.EggFarmingHubV108={Stop=stop,Save=save,Capture=capture,ScanEntries=scan,DetectCollection=detect,DetectMutation=selectedMutation,FormatMoney=money,GetCaches=function() return cache end,GetESPSettings=function() return cfg end,Hide=function() setMode('HIDDEN') end,Show=function() setMode('EXPANDED') end,Minimize=function() setMode('MINIMIZED') end}
-print('Egg Farming Hub V10.8 ready | Hide: '..cfg.hideKey..' | Panic: '..cfg.panicKey..' | cache: '..imported)
+_G.EggFarmingHubV109={Stop=stop,Save=save,Capture=capture,ScanEntries=scan,DetectCollection=detect,DetectMutation=selectedMutation,FormatMoney=money,GetCaches=function() return cache end,GetESPSettings=function() return cfg end,Hide=function() setMode('HIDDEN') end,Show=function() setMode('EXPANDED') end,Minimize=function() setMode('MINIMIZED') end}
+print('Egg Farming Hub V10.9 ready | Hide: '..cfg.hideKey..' | Panic: '..cfg.panicKey..' | cache: '..imported)
