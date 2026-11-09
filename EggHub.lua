@@ -1,9 +1,9 @@
--- Egg Farming Hub V11.0 | Optimised standalone release
+-- CRBF HUB V11.1 | Optimised standalone release
 -- ESP + index tracker only. K hides the hub, not overlays.
 local P=game:GetService('Players'); local U=game:GetService('UserInputService'); local H=game:GetService('HttpService')
 local me=P.LocalPlayer; local pg=me:WaitForChild('PlayerGui')
-for _,key in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108','EggFarmingHubV109','EggFarmingHubV110'}) do local old=_G[key]; if type(old)=='table' and type(old.Stop)=='function' then pcall(old.Stop) end end
-for _,name in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108','EggFarmingHubV109','EggFarmingHubV110'}) do local g=pg:FindFirstChild(name); if g then g:Destroy() end end
+for _,key in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108','EggFarmingHubV109','EggFarmingHubV110','CRBFHubV111'}) do local old=_G[key]; if type(old)=='table' and type(old.Stop)=='function' then pcall(old.Stop) end end
+for _,name in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108','EggFarmingHubV109','EggFarmingHubV110','CRBFHubV111'}) do local g=pg:FindFirstChild(name); if g then g:Destroy() end end
 local live=true; local con={}; local objects={}; local pages={}; local cache={}; local dirty=false; local settingsDirty=false
 local rarities={'Common','Uncommon','Rare','Epic','Legendary','Mythic','Divine','Cosmic','Celestial','Secret','Void','Inferno','Omega','Spectral','Ethereal','Primordial'}
 local mutations={'Gold','Diamond','Lightning','Frozen','Angelic','Hacker','Time','Void'}
@@ -13,16 +13,16 @@ local mc={Gold='#FFCD23',Diamond='#55EBFF',Lightning='#FFFF4B',Frozen='#64AFFF',
 local function color(hex) return Color3.fromHex(hex or '#FFFFFF') end
 local theme={bg=color('#090D1B'),side=color('#10162B'),panel=color('#151D36'),card=color('#202A48'),border=color('#35507B'),blue=color('#29C7FF'),purple=color('#A16BFF'),white=color('#F1F5FF'),muted=color('#9BAAC1'),green=color('#4CDC91'),red=color('#F55B6E')}
 local cfg={playerStyle='Compact',playerOutline=true,playerFill=false,playerThroughWalls=true,playerHeadSide=3,playerBubbleSize=25,playerBubbleBackground=true,playerBubbleDistance=false,playerOverrides={},moneyMode='Rarity Only',minimumIncomeText='20B',showAnimalIncome=true,playerSelection={},rarity=false,mutation=false,players=false,animalSize=15,playerSize=17,playerCardWidth=290,playerCardScale=100,playerAutoResize=true,playerColorHex='#FF5050',playerSeparateColors=false,playerHighlightHex='#FF5050',trans=.65,animalBG=.18,playerBG=.15,animalRange=1500,playerRange=1500,unlimitedPlayerRange=false,showIndexStatus=true,missingIndexOnly=false,prioritiseMissing=true,rgb={255,80,80},username=true,distance=true,health=true,speed=true,money=true,selectedR={},selectedM={},hideKey='K',panicKey='P',uiScale=100,uiOpacity=10,accentR=41,accentG=199,accentB=255,antiAFK=false,masteryPolling=true,masteryInterval=2}
-local folder='EggFarmingHub'; local cf=folder..'/CollectionCacheV110.json'; local sf=folder..'/SettingsV110.json'; local fileOK=type(readfile)=='function' and type(writefile)=='function' and type(isfile)=='function'
+local folder='EggFarmingHub'; local cf=folder..'/CollectionCacheV111.json'; local sf=folder..'/SettingsV111.json'; local fileOK=type(readfile)=='function' and type(writefile)=='function' and type(isfile)=='function'
 local function listen(sig,fn) local c=sig:Connect(fn); con[#con+1]=c; return c end
 local function folderReady() if type(makefolder)=='function' then pcall(makefolder,folder) end end
 local function read(path) if not fileOK then return end; local ok,res=pcall(function() if isfile(path) then return H:JSONDecode(readfile(path)) end end); if ok and type(res)=='table' and res.PlaceId==game.PlaceId and res.UserId==me.UserId then return res end end
 local function write(path,data) if not fileOK then return false end; folderReady(); data.PlaceId=game.PlaceId; data.UserId=me.UserId; local ok=pcall(function() writefile(path,H:JSONEncode(data)) end); return ok end
 local imported='None'; local verified=false
-local function load() local s=read(sf) or read(folder..'/SettingsV109.json') or read(folder..'/SettingsV108.json') or read(folder..'/SettingsV107.json') or read(folder..'/SettingsV106.json') or read(folder..'/SettingsV105.json') or read(folder..'/SettingsV104.json') or read(folder..'/SettingsV103.json') or read(folder..'/SettingsV102.json') or read(folder..'/SettingsV101.json'); if s then local source=s.Settings or s; for k,v in pairs(source) do if cfg[k]~=nil and type(v)==type(cfg[k]) then cfg[k]=v end end; if s.RarityESP~=nil then cfg.rarity=s.RarityESP end; if s.MutationESP~=nil then cfg.mutation=s.MutationESP end; if s.PlayerESP~=nil then cfg.players=s.PlayerESP end; cfg.selectedR=s.RaritySelected or cfg.selectedR; cfg.selectedM=s.MutationSelected or cfg.selectedM; cfg.rgb=s.PlayerRGB and {s.PlayerRGB.R or 255,s.PlayerRGB.G or 80,s.PlayerRGB.B or 80} or cfg.rgb end
-for _,f in ipairs({cf,folder..'/CollectionCacheV109.json',folder..'/CollectionCacheV108.json',folder..'/CollectionCacheV107.json',folder..'/CollectionCacheV106.json',folder..'/CollectionCacheV105.json',folder..'/CollectionCacheV104.json',folder..'/CollectionCacheV103.json',folder..'/CollectionCacheV102.json',folder..'/CollectionCacheV101.json',folder..'/CollectionCacheV100.json',folder..'/CollectionCacheV99.json',folder..'/CollectionCacheV98.json',folder..'/CollectionCacheV97.json',folder..'/CollectionCacheV96.json',folder..'/CollectionCacheV95.json'}) do local d=read(f); if d and type(d.Caches)=='table' then cache=d.Caches; imported=f; dirty=f~=cf; break end end end
+local function load() local s=read(sf) or read(folder..'/SettingsV110.json') or read(folder..'/SettingsV109.json') or read(folder..'/SettingsV108.json') or read(folder..'/SettingsV107.json') or read(folder..'/SettingsV106.json') or read(folder..'/SettingsV105.json') or read(folder..'/SettingsV104.json') or read(folder..'/SettingsV103.json') or read(folder..'/SettingsV102.json') or read(folder..'/SettingsV101.json'); if s then local source=s.Settings or s; for k,v in pairs(source) do if cfg[k]~=nil and type(v)==type(cfg[k]) then cfg[k]=v end end; if s.RarityESP~=nil then cfg.rarity=s.RarityESP end; if s.MutationESP~=nil then cfg.mutation=s.MutationESP end; if s.PlayerESP~=nil then cfg.players=s.PlayerESP end; cfg.selectedR=s.RaritySelected or cfg.selectedR; cfg.selectedM=s.MutationSelected or cfg.selectedM; cfg.rgb=s.PlayerRGB and {s.PlayerRGB.R or 255,s.PlayerRGB.G or 80,s.PlayerRGB.B or 80} or cfg.rgb end
+for _,f in ipairs({cf,folder..'/CollectionCacheV110.json',folder..'/CollectionCacheV109.json',folder..'/CollectionCacheV108.json',folder..'/CollectionCacheV107.json',folder..'/CollectionCacheV106.json',folder..'/CollectionCacheV105.json',folder..'/CollectionCacheV104.json',folder..'/CollectionCacheV103.json',folder..'/CollectionCacheV102.json',folder..'/CollectionCacheV101.json',folder..'/CollectionCacheV100.json',folder..'/CollectionCacheV99.json',folder..'/CollectionCacheV98.json',folder..'/CollectionCacheV97.json',folder..'/CollectionCacheV96.json',folder..'/CollectionCacheV95.json'}) do local d=read(f); if d and type(d.Caches)=='table' then cache=d.Caches; imported=f; dirty=f~=cf; break end end end
 load()
-local function save() local ok=write(cf,{Version='11.0',Caches=cache}); if ok then local d=read(cf); verified=d and type(d.Caches)=='table' or false; if verified then dirty=false end end; write(sf,{Version='11.0',Settings=cfg}); settingsDirty=false; return verified end
+local function save() local ok=write(cf,{Version='11.1',Caches=cache}); if ok then local d=read(cf); verified=d and type(d.Caches)=='table' or false; if verified then dirty=false end end; write(sf,{Version='11.1',Settings=cfg}); settingsDirty=false; return verified end
 local suffix={{1e36,'Ud'},{1e33,'Dc'},{1e30,'No'},{1e27,'Oc'},{1e24,'Sp'},{1e21,'Sx'},{1e18,'Qi'},{1e15,'Qa'},{1e12,'T'},{1e9,'B'},{1e6,'M'},{1e3,'K'}}
 local function money(n) if type(n)~='number' then return 'N/A' end; if n~=n then return 'N/A' end; local sign=n<0 and '-$' or '$'; n=math.abs(n); for _,e in ipairs(suffix) do if n>=e[1] then local x=string.format('%.2f',math.floor(n/e[1]*100)/100):gsub('0+$',''):gsub('%.$',''); return sign..x..e[2] end end; return sign..math.floor(n) end
 local function parseIncome(value)
@@ -227,7 +227,7 @@ local function detect() local i=index(); if not i then return nil,'INDEX_MISSING
 local function scan() local entries={}; local seen={}; local i=index(); if not i then return entries end; for _,list in ipairs(i:GetDescendants()) do if list.Name=='AnimalList' then local zone=list.Parent and list.Parent.Name or 'Unknown'; for _,frame in ipairs(list:GetChildren()) do if frame:IsA('Frame') and frame.Name~='Template' then local inner=frame:FindFirstChild('Inner'); local label=inner and inner:FindFirstChild('Name'); if label and label:IsA('TextLabel') then local key=zone..'|'..frame.Name; if not seen[key] then seen[key]=true; local gradient=inner:FindFirstChild('UIGradient'); local rarity=gradient and gradient:GetAttribute('Rarity') or frame:GetAttribute('Rarity') or 'Unknown'; entries[#entries+1]={Zone=zone,InternalName=frame.Name,Name=label.Text=='???' and frame.Name or label.Text,Rarity=tostring(rarity),Status=label.Text=='???' and 'MISSING' or 'COLLECTED'} end end end end end end; table.sort(entries,function(a,b) if a.Zone~=b.Zone then local x=tonumber(a.Zone:match('[Zz]one(%d+)')); local y=tonumber(b.Zone:match('[Zz]one(%d+)')); if x and y then return x<y end; return x~=nil end; return a.InternalName<b.InternalName end); return entries end
 local function stats(entries) local s={RegularTotal=0,RegularCollected=0,EventTotal=0,EventCollected=0}; for _,e in ipairs(entries) do local event=not e.Zone:match('[Zz]one%d+'); local prefix=event and 'Event' or 'Regular'; s[prefix..'Total']+=1; if e.Status=='COLLECTED' then s[prefix..'Collected']+=1 end end; return s end
 local function capture(name,source) if not name then return false end; local entries=scan(); local s=stats(entries); local a,b=progressNumbers(); if s.RegularTotal~=120 or s.EventTotal~=15 then return false end; if name=='Limited' then if b~=15 or a~=s.EventCollected then return false end else if b~=120 or a~=s.RegularCollected then return false end end; local sig=H:JSONEncode(entries)..'|'..progressText(); if cache[name] and cache[name].Signature==sig then return false end; cache[name]={Entries=entries,Stats=s,Progress=progressText(),Signature=sig,Source=source or 'Manual',UpdatedAt=os.time()}; dirty=true; return true end
-local gui=new('ScreenGui',pg,{Name='EggFarmingHubV110',ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling}); local main=round(new('Frame',gui,{Size=UDim2.fromOffset(780,580),Position=UDim2.new(.5,-390,.5,-290),BackgroundColor3=theme.bg,BorderSizePixel=0,Active=true}),12); border(main); local head=new('Frame',main,{Size=UDim2.new(1,0,0,58),BackgroundColor3=theme.side,BorderSizePixel=0,Active=true}); text(head,'EGG FARMING HUB',18,{Size=UDim2.new(1,-120,0,28),Position=UDim2.fromOffset(18,5),Font=Enum.Font.GothamBold}); text(head,'V11.0  /  NEON EDITION  /  K TO HIDE',10,{Size=UDim2.new(1,-120,0,20),Position=UDim2.fromOffset(18,31),TextColor3=theme.muted});
+local gui=new('ScreenGui',pg,{Name='CRBFHubV111','CRBFHubV111',ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling}); local main=round(new('Frame',gui,{Size=UDim2.fromOffset(780,580),Position=UDim2.new(.5,-390,.5,-290),BackgroundColor3=theme.bg,BorderSizePixel=0,Active=true}),12); border(main); local head=new('Frame',main,{Size=UDim2.new(1,0,0,58),BackgroundColor3=theme.side,BorderSizePixel=0,Active=true}); text(head,'CRBF HUB',18,{Size=UDim2.new(1,-120,0,28),Position=UDim2.fromOffset(18,5),Font=Enum.Font.GothamBold}); text(head,'V11.1  /  NEON EDITION  /  K TO HIDE',10,{Size=UDim2.new(1,-120,0,20),Position=UDim2.fromOffset(18,31),TextColor3=theme.muted});
 new('UIGradient',main,{Rotation=125,Color=ColorSequence.new({ColorSequenceKeypoint.new(0,color('#111C39')),ColorSequenceKeypoint.new(.55,color('#090D1B')),ColorSequenceKeypoint.new(1,color('#1B1237'))})})
 new('UIStroke',main,{Color=theme.blue,Thickness=1.5,Transparency=.25})
 new('Frame',head,{Size=UDim2.new(1,0,0,3),Position=UDim2.new(0,0,1,-3),BorderSizePixel=0,BackgroundColor3=theme.blue})
@@ -240,11 +240,28 @@ local function page(name) local p=new('ScrollingFrame',body,{Name=name,Size=UDim
 for _,name in ipairs(pageNames) do pages[name]=page(name) end
 local function clear(p) for _,x in ipairs(p:GetChildren()) do if x:IsA('GuiObject') then x:Destroy() end end end
 local function line(p,s,size,height,c) return text(p,s,size or 12,{Size=UDim2.new(1,0,0,height or 28),TextColor3=c or theme.white,TextWrapped=true}) end
+local collapsedSections={}
 local function section(p,s)
     local row=new('Frame',p,{Size=UDim2.new(1,0,0,34),BackgroundTransparency=1})
-    new('Frame',row,{Size=UDim2.fromOffset(3,19),Position=UDim2.fromOffset(0,8),BackgroundColor3=theme.blue,BorderSizePixel=0})
-    text(row,string.upper(s),13,{Size=UDim2.new(1,-16,1,0),Position=UDim2.fromOffset(13,0),Font=Enum.Font.GothamBold,TextColor3=theme.white})
+    row:SetAttribute('CRBFSection',true)
+    local marker=new('Frame',row,{Size=UDim2.fromOffset(3,19),Position=UDim2.fromOffset(0,8),BackgroundColor3=theme.blue,BorderSizePixel=0})
+    local label=text(row,string.upper(s),13,{Size=UDim2.new(1,-52,1,0),Position=UDim2.fromOffset(13,0),Font=Enum.Font.GothamBold,TextColor3=theme.white})
+    local key=p.Name..'/'..s
+    local arrow=btn(row,collapsedSections[key] and '▶' or '▼',nil,{Size=UDim2.fromOffset(34,29),Position=UDim2.new(1,-37,0,2),BackgroundColor3=theme.card,TextSize=15})
+    local function apply()
+        local children=p:GetChildren(); local active=false
+        for _,child in ipairs(children) do
+            if child==row then active=true
+            elseif active and child:IsA('GuiObject') and child:GetAttribute('CRBFSection') then break
+            elseif active and child:IsA('GuiObject') then child.Visible=not collapsedSections[key] end
+        end
+        arrow.Text=collapsedSections[key] and '▶' or '▼'
+    end
+    arrow.MouseButton1Click:Connect(function() collapsedSections[key]=not collapsedSections[key]; apply() end)
+    task.defer(function() if row.Parent then apply() end end)
+    return row
 end
+
 local function action(p,s,fn,c)
     local b=btn(p,s,fn,{BackgroundColor3=c or theme.card,TextSize=12})
     border(b,theme.border)
@@ -332,7 +349,7 @@ local function scanMasteryGUI()
                         local entry=masteryData[name] or {}
                         if level then entry.level=tonumber(level) end
                         if xp then entry.xp=masteryTextNumber(xp); entry.required=masteryTextNumber(maxxp) end
-                        masteryData[name]=entry; masterySource[name]='Visible mastery menu'
+                        if masterySource[name]~='Replicated data' then masteryData[name]=entry; masterySource[name]='Visible mastery menu' end
                     end
                 end
             end
@@ -620,7 +637,7 @@ end
 render.Mastery=function()
     local p=pages.Mastery; clear(p)
     section(p,'LIVE MASTERY TRACKER')
-    line(p,'Tracks replicated mastery data while you train. If only menu data is available, the last observed values are retained and marked as such.',12,65,theme.muted)
+    line(p,'LIVE requires XP replicated to your client. Menu-only XP is a snapshot, not live. XP/min and ETA use observed increases, never a guessed rate.',12,70,theme.muted)
     action(p,'REFRESH MASTERY DATA',function() scanMasteryData(); scanMasteryGUI(); updateMasteryRates(); render.Mastery() end,theme.blue)
     local source=findMasteryRoot()
     line(p,'Data source: '..(source and source:GetFullName() or 'No recognised replicated mastery folder found'),11,43,theme.muted)
@@ -642,7 +659,7 @@ render.Mastery=function()
                 local remain=math.max(0,d.required-d.xp)
                 line(p,('%.1f%%  •  %s XP remaining  •  %s  •  ETA %s'):format(pct*100,tostring(math.floor(remain)),rate and string.format('%.1f XP/min',rate) or 'XP rate unknown',rate and rate>0 and string.format('%.1f min',remain/rate) or 'unknown'),11,48,theme.muted)
             end
-            line(p,'Source: '..(masterySource[name] or 'Unknown')..(masterySource[name]=='Visible mastery menu' and ' (may be stale when menu closes)' or ''),10,30,theme.muted)
+            line(p,'Source: '..(masterySource[name] or 'Unknown')..(masterySource[name]=='Visible mastery menu' and ' (SNAPSHOT: not live)' or ''),10,30,theme.muted)
         end
     end
 end
@@ -684,6 +701,49 @@ showTab=function(name)
     render[name]()
     pages[name].CanvasPosition=Vector2.new(0,0)
 end
+-- Search across hub controls; results navigate to the matching tab and expand its sections.
+local searchBox=round(new('TextBox',sidebar,{Name='CRBFSearch',Size=UDim2.new(1,0,0,37),LayoutOrder=-10,BackgroundColor3=theme.card,TextColor3=theme.white,PlaceholderText='⌕ Search settings...',PlaceholderColor3=theme.muted,Text='',ClearTextOnFocus=false,Font=Enum.Font.Gotham,TextSize=12,BorderSizePixel=0}),8)
+local searchResults=new('ScrollingFrame',sidebar,{Name='SearchResults',Size=UDim2.new(1,0,0,0),LayoutOrder=-9,BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=3,Visible=false,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y})
+new('UIListLayout',searchResults,{Padding=UDim.new(0,4)})
+local searchCatalog={
+    {'Animal ESP','Rarity ESP'},{'Animal ESP','Mutation ESP'},{'Animal ESP','Show index collection status'},{'Animal ESP','Show only animals needed for index'},{'Animal ESP','Highlight needed animals'},{'Animal ESP','Text size'},{'Animal ESP','Maximum distance'},{'Animal ESP','Rarity filters'},{'Animal ESP','Mutation filters'},
+    {'Money','ESP FILTER MODE'},{'Money','Minimum income'},{'Money','Show animal income'},
+    {'Player ESP','ESP STYLE'},{'Player ESP','Outline around character'},{'Player ESP','Body fill highlight'},{'Player ESP','Outline visible through walls'},{'Player ESP','Head-side card offset'},{'Player ESP','Bubble font size'},{'Player ESP','Bubble background'},{'Player ESP','Bubble distance'},{'Player ESP','Enable Player ESP'},{'Player ESP','Auto-resize cards'},{'Player ESP','Card width'},{'Player ESP','Overall card scale'},{'Player ESP','Text size'},{'Player ESP','Card transparency'},{'Player ESP','Highlight transparency'},{'Player ESP','Player selection'},{'Player ESP','Show Username'},{'Player ESP','Show Distance'},{'Player ESP','Show Health'},{'Player ESP','Show Speed'},{'Player ESP','Show Money'},
+    {'Mastery','LIVE MASTERY TRACKER'},{'Mastery','Running'},{'Mastery','XP rate'},{'Mastery','Refresh mastery'},
+    {'Settings','Anti-AFK'},{'Settings','Track mastery automatically'},{'Settings','Keyboard shortcuts'},{'Settings','Appearance'},{'Settings','Storage'}
+}
+local function runSearch()
+    for _,child in ipairs(searchResults:GetChildren()) do if child:IsA('GuiObject') then child:Destroy() end end
+    local q=searchBox.Text:lower():gsub('^%s+',''):gsub('%s+$','')
+    local active=q~=''
+    searchResults.Visible=active
+    for _,b in pairs(nav) do b.Visible=not active end
+    if not active then searchResults.Size=UDim2.new(1,0,0,0); return end
+    searchResults.Size=UDim2.new(1,0,1,-70)
+    local count=0
+    for _,entry in ipairs(searchCatalog) do
+        if (entry[1]..' '..entry[2]):lower():find(q,1,true) then
+            count+=1
+            if count<=40 then
+                btn(searchResults,entry[2]..'  ›',function()
+                    for key in pairs(collapsedSections) do if key:sub(1,#entry[1]+1)==entry[1]..'/' then collapsedSections[key]=false end end
+                    showTab(entry[1]); searchBox:ReleaseFocus()
+                    local page=pages[entry[1]]
+                    task.defer(function()
+                        if not page or not page.Parent then return end
+                        local target
+                        for _,d in ipairs(page:GetDescendants()) do
+                            if (d:IsA('TextLabel') or d:IsA('TextButton')) and d.Text:lower():find(entry[2]:lower(),1,true) then target=d; break end
+                        end
+                        if target then page.CanvasPosition=Vector2.new(0,math.max(0,target.AbsolutePosition.Y-page.AbsolutePosition.Y+page.CanvasPosition.Y-25)) end
+                    end)
+                end,{Size=UDim2.new(1,-4,0,35),BackgroundColor3=theme.card,TextSize=10,TextWrapped=true})
+            end
+        end
+    end
+    if count==0 then text(searchResults,'No matching controls',11,{Size=UDim2.new(1,0,0,32),TextColor3=theme.muted}) end
+end
+searchBox:GetPropertyChangedSignal('Text'):Connect(runSearch)
 for i,name in ipairs({'ESP','Money','Players','Index','Mastery','Settings'}) do
     nav[name]=btn(sidebar,({'◎ ','＄ ','◉ ','▦ ','★ ','⚙ '})[i]..name,function()
         showTab(name=='ESP' and 'Animal ESP' or (name=='Money' and 'Money' or (name=='Players' and 'Player ESP' or (name=='Index' and indexSub or (name=='Mastery' and 'Mastery' or 'Settings')))))
@@ -740,5 +800,5 @@ task.spawn(function()
         task.wait(math.clamp(cfg.masteryInterval or 2,1,15))
     end
 end)
-_G.EggFarmingHubV110={Stop=stop,Save=save,Capture=capture,ScanEntries=scan,DetectCollection=detect,DetectMutation=selectedMutation,FormatMoney=money,GetCaches=function() return cache end,GetESPSettings=function() return cfg end,Hide=function() setMode('HIDDEN') end,Show=function() setMode('EXPANDED') end,Minimize=function() setMode('MINIMIZED') end}
-print('Egg Farming Hub V11.0 ready | Hide: '..cfg.hideKey..' | Panic: '..cfg.panicKey..' | cache: '..imported)
+_G.CRBFHubV111={Stop=stop,Save=save,Capture=capture,ScanEntries=scan,DetectCollection=detect,DetectMutation=selectedMutation,FormatMoney=money,GetCaches=function() return cache end,GetESPSettings=function() return cfg end,Hide=function() setMode('HIDDEN') end,Show=function() setMode('EXPANDED') end,Minimize=function() setMode('MINIMIZED') end}
+print('CRBF HUB V11.1 ready | Hide: '..cfg.hideKey..' | Panic: '..cfg.panicKey..' | cache: '..imported)
