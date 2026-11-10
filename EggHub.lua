@@ -1,11 +1,10 @@
--- CRBF HUB V11.1 DIAGNOSTIC BUILD
-local SOURCE = [==[
+-- CRBF HUB V12 | Chilli-inspired split navigation, red/black theme, existing V11.1 logic retained
 -- CRBF HUB V11.1 | Optimised standalone release
 -- ESP + index tracker only. K hides the hub, not overlays.
 local P=game:GetService('Players'); local U=game:GetService('UserInputService'); local H=game:GetService('HttpService')
 local me=P.LocalPlayer; local pg=me:WaitForChild('PlayerGui')
-for _,key in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108','EggFarmingHubV109','EggFarmingHubV110','CRBFHubV111'}) do local old=_G[key]; if type(old)=='table' and type(old.Stop)=='function' then pcall(old.Stop) end end
-for _,name in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108','EggFarmingHubV109','EggFarmingHubV110','CRBFHubV111'}) do local g=pg:FindFirstChild(name); if g then g:Destroy() end end
+for _,key in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108','EggFarmingHubV109','EggFarmingHubV110','CRBFHubV111','CRBFHubV12'}) do local old=_G[key]; if type(old)=='table' and type(old.Stop)=='function' then pcall(old.Stop) end end
+for _,name in ipairs({'EggFarmingHubV103','EggFarmingHubV104','EggFarmingHubV105','EggFarmingHubV106','EggFarmingHubV107','EggFarmingHubV108','EggFarmingHubV109','EggFarmingHubV110','CRBFHubV111','CRBFHubV12'}) do local g=pg:FindFirstChild(name); if g then g:Destroy() end end
 local live=true; local con={}; local objects={}; local pages={}; local cache={}; local dirty=false; local settingsDirty=false
 local rarities={'Common','Uncommon','Rare','Epic','Legendary','Mythic','Divine','Cosmic','Celestial','Secret','Void','Inferno','Omega','Spectral','Ethereal','Primordial'}
 local mutations={'Gold','Diamond','Lightning','Frozen','Angelic','Hacker','Time','Void'}
@@ -13,8 +12,8 @@ local collections={'Normal','Limited','Gold','Diamond','Lightning','Frozen','Ang
 local rc={Common='#B4B4B4',Uncommon='#4BDC5F',Rare='#3791FF',Epic='#AF4BFF',Legendary='#FFAF23',Mythic='#FF4169',Divine='#FFF578',Cosmic='#8741FF',Celestial='#5FF0FF',Secret='#FF2D41',Void='#5F239B',Inferno='#FF550F',Omega='#FF2DC3',Spectral='#73FFBE',Ethereal='#AFDCFF',Primordial='#FFD787'}
 local mc={Gold='#FFCD23',Diamond='#55EBFF',Lightning='#FFFF4B',Frozen='#64AFFF',Angelic='#FFFFE1',Hacker='#23FF55',Time='#FF64CD',Void='#9137E6'}
 local function color(hex) return Color3.fromHex(hex or '#FFFFFF') end
-local theme={bg=color('#090D1B'),side=color('#10162B'),panel=color('#151D36'),card=color('#202A48'),border=color('#35507B'),blue=color('#29C7FF'),purple=color('#A16BFF'),white=color('#F1F5FF'),muted=color('#9BAAC1'),green=color('#4CDC91'),red=color('#F55B6E')}
-local cfg={playerStyle='Compact',playerOutline=true,playerFill=false,playerThroughWalls=true,playerHeadSide=3,playerBubbleSize=25,playerBubbleBackground=true,playerBubbleDistance=false,playerOverrides={},moneyMode='Rarity Only',minimumIncomeText='20B',showAnimalIncome=true,playerSelection={},rarity=false,mutation=false,players=false,animalSize=15,playerSize=17,playerCardWidth=290,playerCardScale=100,playerAutoResize=true,playerColorHex='#FF5050',playerSeparateColors=false,playerHighlightHex='#FF5050',trans=.65,animalBG=.18,playerBG=.15,animalRange=1500,playerRange=1500,unlimitedPlayerRange=false,showIndexStatus=true,missingIndexOnly=false,prioritiseMissing=true,rgb={255,80,80},username=true,distance=true,health=true,speed=true,money=true,selectedR={},selectedM={},hideKey='K',panicKey='P',uiScale=100,uiOpacity=10,accentR=41,accentG=199,accentB=255,antiAFK=false,masteryPolling=true,masteryInterval=2}
+local theme={bg=color('#100E13'),side=color('#23171C'),panel=color('#2B2025'),card=color('#3C2A30'),border=color('#753A47'),blue=color('#F04457'),purple=color('#FF7D87'),white=color('#FFF4F5'),muted=color('#C4A8AE'),green=color('#49D98A'),red=color('#E5364C')}
+local cfg={playerStyle='Bubble Name',playerOutline=true,playerFill=false,playerThroughWalls=true,playerHeadSide=3,playerBubbleSize=25,playerBubbleBackground=false,playerBubbleDistance=false,playerOverrides={},moneyMode='Rarity Only',minimumIncomeText='20B',showAnimalIncome=true,playerSelection={},rarity=false,mutation=false,players=false,animalSize=15,playerSize=17,playerCardWidth=290,playerCardScale=100,playerAutoResize=true,playerColorHex='#FF5050',playerSeparateColors=false,playerHighlightHex='#FF5050',trans=.65,animalBG=.18,playerBG=.15,animalRange=1500,playerRange=1500,unlimitedPlayerRange=false,showIndexStatus=true,missingIndexOnly=false,prioritiseMissing=true,rgb={255,80,80},username=true,distance=true,health=true,speed=true,money=true,selectedR={},selectedM={},hideKey='K',panicKey='P',uiScale=100,uiOpacity=10,accentR=240,accentG=68,accentB=87,antiAFK=false,masteryPolling=true,masteryInterval=2}
 local folder='EggFarmingHub'; local cf=folder..'/CollectionCacheV111.json'; local sf=folder..'/SettingsV111.json'; local fileOK=type(readfile)=='function' and type(writefile)=='function' and type(isfile)=='function'
 local function listen(sig,fn) local c=sig:Connect(fn); con[#con+1]=c; return c end
 local function folderReady() if type(makefolder)=='function' then pcall(makefolder,folder) end end
@@ -23,9 +22,7 @@ local function write(path,data) if not fileOK then return false end; folderReady
 local imported='None'; local verified=false
 local function load() local s=read(sf) or read(folder..'/SettingsV110.json') or read(folder..'/SettingsV109.json') or read(folder..'/SettingsV108.json') or read(folder..'/SettingsV107.json') or read(folder..'/SettingsV106.json') or read(folder..'/SettingsV105.json') or read(folder..'/SettingsV104.json') or read(folder..'/SettingsV103.json') or read(folder..'/SettingsV102.json') or read(folder..'/SettingsV101.json'); if s then local source=s.Settings or s; for k,v in pairs(source) do if cfg[k]~=nil and type(v)==type(cfg[k]) then cfg[k]=v end end; if s.RarityESP~=nil then cfg.rarity=s.RarityESP end; if s.MutationESP~=nil then cfg.mutation=s.MutationESP end; if s.PlayerESP~=nil then cfg.players=s.PlayerESP end; cfg.selectedR=s.RaritySelected or cfg.selectedR; cfg.selectedM=s.MutationSelected or cfg.selectedM; cfg.rgb=s.PlayerRGB and {s.PlayerRGB.R or 255,s.PlayerRGB.G or 80,s.PlayerRGB.B or 80} or cfg.rgb end
 for _,f in ipairs({cf,folder..'/CollectionCacheV110.json',folder..'/CollectionCacheV109.json',folder..'/CollectionCacheV108.json',folder..'/CollectionCacheV107.json',folder..'/CollectionCacheV106.json',folder..'/CollectionCacheV105.json',folder..'/CollectionCacheV104.json',folder..'/CollectionCacheV103.json',folder..'/CollectionCacheV102.json',folder..'/CollectionCacheV101.json',folder..'/CollectionCacheV100.json',folder..'/CollectionCacheV99.json',folder..'/CollectionCacheV98.json',folder..'/CollectionCacheV97.json',folder..'/CollectionCacheV96.json',folder..'/CollectionCacheV95.json'}) do local d=read(f); if d and type(d.Caches)=='table' then cache=d.Caches; imported=f; dirty=f~=cf; break end end end
-print('[CRBF] Loading settings/cache')
 load()
-print('[CRBF] Settings/cache loaded')
 local function save() local ok=write(cf,{Version='11.1',Caches=cache}); if ok then local d=read(cf); verified=d and type(d.Caches)=='table' or false; if verified then dirty=false end end; write(sf,{Version='11.1',Settings=cfg}); settingsDirty=false; return verified end
 local suffix={{1e36,'Ud'},{1e33,'Dc'},{1e30,'No'},{1e27,'Oc'},{1e24,'Sp'},{1e21,'Sx'},{1e18,'Qi'},{1e15,'Qa'},{1e12,'T'},{1e9,'B'},{1e6,'M'},{1e3,'K'}}
 local function money(n) if type(n)~='number' then return 'N/A' end; if n~=n then return 'N/A' end; local sign=n<0 and '-$' or '$'; n=math.abs(n); for _,e in ipairs(suffix) do if n>=e[1] then local x=string.format('%.2f',math.floor(n/e[1]*100)/100):gsub('0+$',''):gsub('%.$',''); return sign..x..e[2] end end; return sign..math.floor(n) end
@@ -231,15 +228,14 @@ local function detect() local i=index(); if not i then return nil,'INDEX_MISSING
 local function scan() local entries={}; local seen={}; local i=index(); if not i then return entries end; for _,list in ipairs(i:GetDescendants()) do if list.Name=='AnimalList' then local zone=list.Parent and list.Parent.Name or 'Unknown'; for _,frame in ipairs(list:GetChildren()) do if frame:IsA('Frame') and frame.Name~='Template' then local inner=frame:FindFirstChild('Inner'); local label=inner and inner:FindFirstChild('Name'); if label and label:IsA('TextLabel') then local key=zone..'|'..frame.Name; if not seen[key] then seen[key]=true; local gradient=inner:FindFirstChild('UIGradient'); local rarity=gradient and gradient:GetAttribute('Rarity') or frame:GetAttribute('Rarity') or 'Unknown'; entries[#entries+1]={Zone=zone,InternalName=frame.Name,Name=label.Text=='???' and frame.Name or label.Text,Rarity=tostring(rarity),Status=label.Text=='???' and 'MISSING' or 'COLLECTED'} end end end end end end; table.sort(entries,function(a,b) if a.Zone~=b.Zone then local x=tonumber(a.Zone:match('[Zz]one(%d+)')); local y=tonumber(b.Zone:match('[Zz]one(%d+)')); if x and y then return x<y end; return x~=nil end; return a.InternalName<b.InternalName end); return entries end
 local function stats(entries) local s={RegularTotal=0,RegularCollected=0,EventTotal=0,EventCollected=0}; for _,e in ipairs(entries) do local event=not e.Zone:match('[Zz]one%d+'); local prefix=event and 'Event' or 'Regular'; s[prefix..'Total']+=1; if e.Status=='COLLECTED' then s[prefix..'Collected']+=1 end end; return s end
 local function capture(name,source) if not name then return false end; local entries=scan(); local s=stats(entries); local a,b=progressNumbers(); if s.RegularTotal~=120 or s.EventTotal~=15 then return false end; if name=='Limited' then if b~=15 or a~=s.EventCollected then return false end else if b~=120 or a~=s.RegularCollected then return false end end; local sig=H:JSONEncode(entries)..'|'..progressText(); if cache[name] and cache[name].Signature==sig then return false end; cache[name]={Entries=entries,Stats=s,Progress=progressText(),Signature=sig,Source=source or 'Manual',UpdatedAt=os.time()}; dirty=true; return true end
-print('[CRBF] Building GUI')
-local gui=new('ScreenGui',pg,{Name='CRBFHubV111',ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling}); local main=round(new('Frame',gui,{Size=UDim2.fromOffset(780,580),Position=UDim2.new(.5,-390,.5,-290),BackgroundColor3=theme.bg,BorderSizePixel=0,Active=true}),12); border(main); local head=new('Frame',main,{Size=UDim2.new(1,0,0,58),BackgroundColor3=theme.side,BorderSizePixel=0,Active=true}); text(head,'CRBF HUB',18,{Size=UDim2.new(1,-120,0,28),Position=UDim2.fromOffset(18,5),Font=Enum.Font.GothamBold}); text(head,'V11.1  /  NEON EDITION  /  K TO HIDE',10,{Size=UDim2.new(1,-120,0,20),Position=UDim2.fromOffset(18,31),TextColor3=theme.muted});
-new('UIGradient',main,{Rotation=125,Color=ColorSequence.new({ColorSequenceKeypoint.new(0,color('#111C39')),ColorSequenceKeypoint.new(.55,color('#090D1B')),ColorSequenceKeypoint.new(1,color('#1B1237'))})})
+local gui=new('ScreenGui',pg,{Name='CRBFHubV12',ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling}); local main=round(new('Frame',gui,{Size=UDim2.fromOffset(1080,610),Position=UDim2.new(.5,-540,.5,-305),BackgroundColor3=theme.bg,BorderSizePixel=0,Active=true}),12); border(main); local head=new('Frame',main,{Size=UDim2.new(1,0,0,58),BackgroundColor3=theme.side,BorderSizePixel=0,Active=true}); text(head,'CRBF HUB',18,{Size=UDim2.new(1,-120,0,28),Position=UDim2.fromOffset(18,5),Font=Enum.Font.GothamBold}); text(head,'V12  /  CHILLI-INSPIRED EDITION  /  K TO HIDE',10,{Size=UDim2.new(1,-120,0,20),Position=UDim2.fromOffset(18,31),TextColor3=theme.muted});
+new('UIGradient',main,{Rotation=125,Color=ColorSequence.new({ColorSequenceKeypoint.new(0,color('#30151E')),ColorSequenceKeypoint.new(.55,color('#120F14')),ColorSequenceKeypoint.new(1,color('#2B141B'))})})
 new('UIStroke',main,{Color=theme.blue,Thickness=1.5,Transparency=.25})
 new('Frame',head,{Size=UDim2.new(1,0,0,3),Position=UDim2.new(0,0,1,-3),BorderSizePixel=0,BackgroundColor3=theme.blue})
 local uiScaler=new('UIScale',main,{Scale=math.clamp((cfg.uiScale or 100)/100,.7,1.2)}); main.BackgroundTransparency=(cfg.uiOpacity or 10)/100
 theme.blue=Color3.fromRGB(cfg.accentR or 41,cfg.accentG or 199,cfg.accentB or 255)
 local function btn(parent,title,fn,props) props=props or {}; props.Size=props.Size or UDim2.new(1,0,0,36); props.BackgroundColor3=props.BackgroundColor3 or theme.card; props.Text=title; props.TextColor3=props.TextColor3 or theme.white; props.Font=Enum.Font.GothamBold; props.TextSize=props.TextSize or 12; props.BorderSizePixel=0; local b=round(new('TextButton',parent,props),7); if fn then b.MouseButton1Click:Connect(function() if live then fn(b) end end) end; return b end
-local sidebar=new('Frame',main,{Size=UDim2.new(0,170,1,-104),Position=UDim2.fromOffset(0,58),BackgroundColor3=theme.side,BorderSizePixel=0}); new('UIPadding',sidebar,{PaddingTop=UDim.new(0,14),PaddingLeft=UDim.new(0,10),PaddingRight=UDim.new(0,10)}); new('UIListLayout',sidebar,{Padding=UDim.new(0,7),SortOrder=Enum.SortOrder.LayoutOrder}); local body=new('Frame',main,{Size=UDim2.new(1,-170,1,-104),Position=UDim2.fromOffset(170,58),BackgroundTransparency=1}); local foot=new('Frame',main,{Size=UDim2.new(1,0,0,46),Position=UDim2.new(0,0,1,-46),BackgroundColor3=theme.side,BorderSizePixel=0}); local floating=round(btn(gui,'EGG',nil,{Size=UDim2.fromOffset(58,58),Position=UDim2.new(0,24,.5,-29),BackgroundColor3=theme.blue,Visible=false,Active=true,TextSize=14}),29); border(floating,theme.white)
+local sidebar=new('Frame',main,{Size=UDim2.new(0,170,1,-104),Position=UDim2.fromOffset(0,58),BackgroundColor3=theme.side,BorderSizePixel=0}); new('UIPadding',sidebar,{PaddingTop=UDim.new(0,14),PaddingLeft=UDim.new(0,10),PaddingRight=UDim.new(0,10)}); new('UIListLayout',sidebar,{Padding=UDim.new(0,7),SortOrder=Enum.SortOrder.LayoutOrder}); local body=new('Frame',main,{Size=UDim2.new(1,-340,1,-104),Position=UDim2.fromOffset(170,58),BackgroundTransparency=1}); local foot=new('Frame',main,{Size=UDim2.new(1,0,0,46),Position=UDim2.new(0,0,1,-46),BackgroundColor3=theme.side,BorderSizePixel=0}); local rightbar=new('Frame',main,{Size=UDim2.new(0,170,1,-104),Position=UDim2.new(1,-170,0,58),BackgroundColor3=theme.side,BorderSizePixel=0}); new('UIPadding',rightbar,{PaddingTop=UDim.new(0,14),PaddingLeft=UDim.new(0,10),PaddingRight=UDim.new(0,10)}); new('UIListLayout',rightbar,{Padding=UDim.new(0,9),SortOrder=Enum.SortOrder.LayoutOrder}); local floating=round(btn(gui,'EGG',nil,{Size=UDim2.fromOffset(58,58),Position=UDim2.new(0,24,.5,-29),BackgroundColor3=theme.blue,Visible=false,Active=true,TextSize=14}),29); border(floating,theme.white)
 local pageNames={'Dashboard','Animal ESP','Player ESP','Money','Animals','Mutations','Mastery','Settings'}; local tab='Dashboard'; local mode='EXPANDED'; local nav={}; local showTab
 local function page(name) local p=new('ScrollingFrame',body,{Name=name,Size=UDim2.new(1,-28,1,-24),Position=UDim2.fromOffset(14,12),BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=4,ScrollBarImageColor3=theme.blue,AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),Visible=false}); new('UIPadding',p,{PaddingBottom=UDim.new(0,18)}); new('UIListLayout',p,{Padding=UDim.new(0,9),SortOrder=Enum.SortOrder.LayoutOrder}); return p end
 for _,name in ipairs(pageNames) do pages[name]=page(name) end
@@ -707,7 +703,7 @@ showTab=function(name)
     pages[name].CanvasPosition=Vector2.new(0,0)
 end
 -- Search across hub controls; results navigate to the matching tab and expand its sections.
-local searchBox=round(new('TextBox',sidebar,{Name='CRBFSearch',Size=UDim2.new(1,0,0,37),LayoutOrder=-10,BackgroundColor3=theme.card,TextColor3=theme.white,PlaceholderText='⌕ Search settings...',PlaceholderColor3=theme.muted,Text='',ClearTextOnFocus=false,Font=Enum.Font.Gotham,TextSize=12,BorderSizePixel=0}),8)
+local searchBox=round(new('TextBox',foot,{Name='CRBFSearch',Size=UDim2.new(1,-32,0,32),Position=UDim2.fromOffset(16,7),LayoutOrder=-10,BackgroundColor3=theme.card,TextColor3=theme.white,PlaceholderText='⌕ Search settings...',PlaceholderColor3=theme.muted,Text='',ClearTextOnFocus=false,Font=Enum.Font.Gotham,TextSize=12,BorderSizePixel=0}),8)
 local searchResults=new('ScrollingFrame',sidebar,{Name='SearchResults',Size=UDim2.new(1,0,0,0),LayoutOrder=-9,BackgroundTransparency=1,BorderSizePixel=0,ScrollBarThickness=3,Visible=false,CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y})
 new('UIListLayout',searchResults,{Padding=UDim.new(0,4)})
 local searchCatalog={
@@ -724,7 +720,7 @@ local function runSearch()
     searchResults.Visible=active
     for _,b in pairs(nav) do b.Visible=not active end
     if not active then searchResults.Size=UDim2.new(1,0,0,0); return end
-    searchResults.Size=UDim2.new(1,0,1,-70)
+    searchResults.Size=UDim2.new(1,0,1,-16)
     local count=0
     for _,entry in ipairs(searchCatalog) do
         if (entry[1]..' '..entry[2]):lower():find(q,1,true) then
@@ -754,6 +750,10 @@ for i,name in ipairs({'ESP','Money','Players','Index','Mastery','Settings'}) do
         showTab(name=='ESP' and 'Animal ESP' or (name=='Money' and 'Money' or (name=='Players' and 'Player ESP' or (name=='Index' and indexSub or (name=='Mastery' and 'Mastery' or 'Settings')))))
     end,{Size=UDim2.new(1,0,0,44),LayoutOrder=i,BackgroundColor3=theme.side,TextXAlignment=Enum.TextXAlignment.Left})
 end
+-- Right-hand quick navigation inspired by Chilli Hub's split menu.
+for i,item in ipairs({{'Dashboard','DASHBOARD'},{'Animal ESP','ANIMAL ESP'},{'Player ESP','PLAYER ESP'},{'Animals','ANIMAL INDEX'},{'Mutations','MUTATIONS'},{'Settings','SETTINGS'}}) do
+    btn(rightbar,item[2],function() showTab(item[1]) end,{Size=UDim2.new(1,0,0,48),LayoutOrder=i,BackgroundColor3=theme.card,TextSize=12})
+end
 local function setMode(v) mode=v; main.Visible=v=='EXPANDED'; floating.Visible=v=='MINIMIZED'; for n,p in pairs(pages) do p.Visible=v=='EXPANDED' and n==tab end end
 btn(head,'−',function() setMode('MINIMIZED') end,{Size=UDim2.fromOffset(30,30),Position=UDim2.new(1,-78,0,14)}); local close=btn(head,'X',nil,{Size=UDim2.fromOffset(30,30),Position=UDim2.new(1,-40,0,14),BackgroundColor3=theme.red});
 local function drag(handle,target) local moving=false; local moved=false; local start; local origin; listen(handle.InputBegan,function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then moving=true; moved=false; start=i.Position; origin=target.Position end end); listen(U.InputChanged,function(i) if moving and i.UserInputType==Enum.UserInputType.MouseMovement then local d=i.Position-start; if d.Magnitude>5 then moved=true end; target.Position=UDim2.new(origin.X.Scale,origin.X.Offset+d.X,origin.Y.Scale,origin.Y.Offset+d.Y) end end); listen(U.InputEnded,function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then moving=false end end); return function() return moved end end
@@ -778,9 +778,6 @@ local sizes={{650,480},{780,580},{920,660}}; local sizeIdx=2; btn(foot,'RESIZE',
 local function stop() if not live then return end; live=false; if panic and panicBackup then cfg.rarity=panicBackup.rarity; cfg.mutation=panicBackup.mutation; cfg.players=panicBackup.players end; save(); for _,c in ipairs(con) do c:Disconnect() end; for m in pairs(objects) do erase(m) end; gui:Destroy() end
 close.MouseButton1Click:Connect(stop)
 showTab('Player ESP')
-main.Visible=true
-gui.Enabled=true
-print('[CRBF] UI created and visible')
 listen(P.PlayerAdded,function()
     if tab=='Player ESP' and live then task.defer(function() if live and tab=='Player ESP' then render['Player ESP']() end end) end
 end)
@@ -808,23 +805,5 @@ task.spawn(function()
         task.wait(math.clamp(cfg.masteryInterval or 2,1,15))
     end
 end)
-_G.CRBFHubV111={Stop=stop,Save=save,Capture=capture,ScanEntries=scan,DetectCollection=detect,DetectMutation=selectedMutation,FormatMoney=money,GetCaches=function() return cache end,GetESPSettings=function() return cfg end,Hide=function() setMode('HIDDEN') end,Show=function() setMode('EXPANDED') end,Minimize=function() setMode('MINIMIZED') end}
-print('CRBF HUB V11.1 ready | Hide: '..cfg.hideKey..' | Panic: '..cfg.panicKey..' | cache: '..imported)
-
-]==]
-local okCompile, compiled = pcall(loadstring, SOURCE)
-local function alert(msg)
-    warn('[CRBF HUB] '..tostring(msg))
-    pcall(function() game:GetService('StarterGui'):SetCore('SendNotification',{Title='CRBF HUB',Text=tostring(msg):sub(1,190),Duration=12}) end)
-end
-if not okCompile or type(compiled)~='function' then
-    alert('Compile error: '..tostring(compiled))
-else
-    local ok, err = xpcall(compiled, function(e) return tostring(e)..'\n'..debug.traceback() end)
-    if not ok then
-        alert('Runtime error: '..tostring(err))
-        if type(writefile)=='function' then pcall(writefile,'CRBF_HUB_ERROR.txt',tostring(err)) end
-    else
-        alert('Script started. Press K if hidden.')
-    end
-end
+_G.CRBFHubV12={Stop=stop,Save=save,Capture=capture,ScanEntries=scan,DetectCollection=detect,DetectMutation=selectedMutation,FormatMoney=money,GetCaches=function() return cache end,GetESPSettings=function() return cfg end,Hide=function() setMode('HIDDEN') end,Show=function() setMode('EXPANDED') end,Minimize=function() setMode('MINIMIZED') end}
+print('CRBF HUB V12 ready | Hide: '..cfg.hideKey..' | Panic: '..cfg.panicKey..' | cache: '..imported)
